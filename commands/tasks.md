@@ -142,6 +142,40 @@ Context for task generation: {ARGS}
 
 The tasks.md should be immediately executable - each task must be specific enough that an LLM can complete it without additional context.
 
+## Orchestration Rules (Enforcement)
+
+These rules apply to the orchestrator (main session) that spawns implementation agents. They are NOT delegated to agents.
+
+### Red Phase Gate (INC-001)
+
+Between Phase 2 (Contract Tests) and Phase 3 (Implementation), the orchestrator MUST:
+
+1. Wait for Phase 2 agent to complete
+2. Run the gate:
+   ```bash
+   bash scripts/bash/assert-red.sh <test_path>
+   ```
+3. If exit code 0 (failures confirmed) → spawn Phase 3 agents
+4. If exit code 1 (no failures) → **DO NOT spawn Phase 3**. Log as incident, re-run Phase 2 with context starvation.
+
+**Context starvation rule:** Phase 2 agents receive ONLY `api-contract.md`. Do NOT provide `data-model.md`, implementation schemas, or any code context. The agent must only have enough to write tests, not to implement.
+
+### Task = Commit Rule (NOTE-001)
+
+Each agent prompt MUST include after every task:
+
+```
+After completing T00X, run:
+  bash scripts/bash/task-commit.sh T00X "short description"
+DO NOT proceed to the next task until committed.
+```
+
+Before Phase 7 (Polish), the orchestrator runs:
+```bash
+bash scripts/bash/validate-commits.sh specs/<feature>/tasks.md
+```
+Gate: if any tasks missing commits → block Phase 7, require cleanup commits first.
+
 ## Task Generation Rules
 
 **CRITICAL**: Tasks MUST be organized by user story to enable independent implementation and testing.
