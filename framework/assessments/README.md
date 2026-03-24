@@ -294,3 +294,41 @@ As project grows, this becomes unmanageable — drift increases, quality drops.
 - Sprint tokens: higher (full context)
 - Refactor tokens: one-time cost, offset by faster future sprints
 - Net: likely cheaper after 2-3 sprints with clean micro-modules
+
+## PRINCIPLE: Micro-Modules + Micro-Tasks (2026-03-24)
+
+**The core formula for AI-native development:**
+
+```
+Micro-task (ticket ≤ 60 lines)
+    +
+Micro-module (file ≤ 150 lines)
+    =
+~500-1000 tokens/task
+~2.4x cheaper than monolith approach
+Zero context drift
+```
+
+**Micro-task rules:**
+- One ticket = one function or one endpoint
+- Ticket ≤ 60 lines total
+- Contains: what to do, relevant code snippet, AC (3-5 items)
+- No background, no full-file context
+
+**Micro-module rules:**
+- One file = one responsibility group
+- File ≤ 150 lines (tests excluded)
+- Shim pattern preserves imports when splitting
+- Refactor pass after each Epic (cadre.refactor command)
+
+**Why it works:**
+- Agent reads 1 file → does 1 thing → no drift to adjacent code
+- Small file = small context = small cost
+- Many small tasks = parallelizable = faster wall-clock time
+- Archi review is faster on 80 lines than 400 lines
+
+**Enforcement:**
+- cadre.tasks generates tickets/ directory (one file per task)
+- spawn-agent.sh reads ticket → minimal prompt
+- validate.md V7: FAIL if any file > 300 lines
+- cadre.refactor: runs after Epic close
