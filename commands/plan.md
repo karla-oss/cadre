@@ -37,7 +37,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 ## Pre-Execution Checks
 
 **Check for extension hooks (before planning)**:
-- Check if `.specify/extensions.yml` exists in the project root.
+- Check if `.cadre/extensions.yml` exists in the project root.
 - If it exists, read it and look for entries under the `hooks.before_plan` key
 - If the YAML cannot be parsed or is invalid, skip hook checking silently and continue normally
 - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
@@ -66,7 +66,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
     Wait for the result of the hook command before proceeding to the Outline.
     ```
-- If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
+- If no hooks are registered or `.cadre/extensions.yml` does not exist, skip silently
 
 ## Outline
 
@@ -74,7 +74,13 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 2. **Load context**: Read FEATURE_SPEC and `/memory/constitution.md`. Load IMPL_PLAN template (already copied).
 
-3. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:
+3. **CADRE Pre-Plan Validation** (I-02):
+   - Check FEATURE_SPEC for `## CADRE Metadata` section
+   - If missing: ERROR "Run /cadre.specify first — spec has no CADRE Metadata"
+   - If `[NEEDS OWNER]` present: ERROR "CADRE I-02: Spec owner must be assigned before planning. Update CADRE Metadata."
+   - If `Status` is not `Approved` or `Under Review`: WARN "Spec status is Draft — consider getting approval before freezing contracts"
+
+4. **Execute plan workflow**: Follow the structure in IMPL_PLAN template to:
    - Fill Technical Context (mark unknowns as "NEEDS CLARIFICATION")
    - Fill Constitution Check section from constitution
    - Evaluate gates (ERROR if violations unjustified)
@@ -83,7 +89,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Phase 1: Update agent context by running the agent script
    - Re-evaluate Constitution Check post-design
 
-4. **CADRE Contract Freeze** (I-01):
+5. **CADRE Contract Freeze** (I-01):
    - Add `## CADRE Contract Status` section to plan.md:
      ```markdown
      ## CADRE Contract Status
@@ -97,14 +103,14 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Validate: every contract in contracts/ must specify which modules are producer vs consumer
    - ERROR if any contract has no assigned owner: "CADRE I-02 violation: contract without explicit owner"
 
-5. **Assessment Gate trigger** (I-01, I-10):
+6. **Assessment Gate trigger** (I-01, I-10):
    - After plan completion, output: `⚠️ CADRE GATE: Plan complete. Assessment Gate REQUIRED before task decomposition.`
    - Recommend: `/cadre.assess` to run readiness, completeness, contradiction, drift checks
    - Do NOT proceed to `/cadre.tasks` until assessment passes
 
-6. **Stop and report**: Command ends after planning. Report branch, IMPL_PLAN path, generated artifacts, and contract freeze status.
+7. **Stop and report**: Command ends after planning. Report branch, IMPL_PLAN path, generated artifacts, and contract freeze status.
 
-7. **Check for extension hooks**: After reporting, check if `.specify/extensions.yml` exists in the project root.
+8. **Check for extension hooks**: After reporting, check if `.cadre/extensions.yml` exists in the project root.
    - If it exists, read it and look for entries under the `hooks.after_plan` key
    - If the YAML cannot be parsed or is invalid, skip hook checking silently and continue normally
    - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
@@ -131,7 +137,7 @@ You **MUST** consider the user input before proceeding (if not empty).
        Executing: `/{command}`
        EXECUTE_COMMAND: {command}
        ```
-   - If no hooks are registered or `.specify/extensions.yml` does not exist, skip silently
+   - If no hooks are registered or `.cadre/extensions.yml` does not exist, skip silently
 
 ## Phases
 

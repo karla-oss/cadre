@@ -141,6 +141,14 @@ Focus on high-signal findings. Limit to 50 findings total; aggregate remainder i
 - Tasks without assessment-report prerequisite
 - Missing quickstart.md validation scenarios for key contracts
 
+#### J. CADRE Drift Detection (I-01)
+
+- Spec scope expanded beyond original description without documented change
+- Plan introduces modules or entities not traceable to spec requirements
+- Tasks reference files or components outside the modules declared in spec CADRE Metadata
+- Contract changes made after freeze date without Architect approval documented
+- Implementation patterns that deviate from plan.md architecture decisions
+
 ### 5. Severity Assignment
 
 Use this heuristic to prioritize findings:
