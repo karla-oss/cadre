@@ -188,3 +188,43 @@ Where `<module_dir>` is declared in sprint-config.md module boundary.
 **Current workaround**: Archi/orchestrator manually fixes review-request files when C3 fails. Acceptable for now, should be automated.
 
 **Priority**: HIGH — fix before T3 test run.
+
+## OBS-009: UI/UX Agent Role Design (2026-03-24)
+
+**Problem**: Should @ui-agent be separate from @frontend-agent?
+
+**Decision**: Two-phase approach, NOT two permanent separate agents.
+
+**Phase 1 — Design Sprint** (once per project):
+- @ui-agent spawned for one sprint
+- Creates `design-system.md` (frozen, Archi approves)
+- Installs Tailwind CSS + component library (shadcn/ui)
+- Creates base layout, theme tokens, reusable primitives
+
+**Phase 2 — Implementation sprints** (ongoing):
+- @frontend-agent receives design-system.md as part of expertise in sprint-config.md
+- Applies design system strictly — no invention of new styles
+- One agent = one component = clean boundary
+
+**Why NOT permanent separation**:
+- Cross-file coordination overhead (component logic + styles in same file in React)
+- Git conflicts inevitable if two agents touch same .tsx file
+- React components are naturally "logic + presentation" — splitting creates artificial boundary
+
+**design-system.md structure** (frozen artifact):
+```markdown
+## Colors (Tailwind tokens)
+primary: indigo-600, bg: slate-950...
+## Typography
+font: Inter, scale: text-sm/base/lg/xl
+## Spacing
+base unit: 4px (Tailwind default)
+## Components
+Use shadcn/ui — Button, Card, Input, Badge, Dialog
+## Rules
+- DO NOT use inline styles
+- DO NOT create custom CSS classes
+- DO NOT use colors outside palette
+```
+
+**When @ui-agent is needed**: Project start OR major redesign. NOT every sprint.
