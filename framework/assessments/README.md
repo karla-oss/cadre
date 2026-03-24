@@ -332,3 +332,39 @@ Zero context drift
 - spawn-agent.sh reads ticket → minimal prompt
 - validate.md V7: FAIL if any file > 300 lines
 - cadre.refactor: runs after Epic close
+
+## OBS-012: Locality-Based Task Clustering (2026-03-24)
+
+**Hypothesis** (not yet tested): Group tasks by module proximity, not by phase.
+
+**Problem**: Assessment gates (readiness, preflight, review) currently scan ENTIRE codebase.
+As codebase grows → review tokens grow linearly → viscosity returns.
+
+**Proposed solution: Macro-module clusters**
+
+```
+Cluster A: analysis/ module
+  Tasks: T019, T024, T025, T026, T049
+  Archi review: reads only analysis/ → ~2k tokens vs 10k+
+
+Cluster B: api/routers/analysis_router/
+  Tasks: T015, T016, T039, T048
+  Archi review: reads only this subdir
+```
+
+**What this changes:**
+- cadre.review: `--cluster analysis` → Archi sees only analysis/ files
+- cadre.preflight: `--module api` → checks only api/ tasks vs api contracts
+- cadre.integrate: runs per boundary pair, not whole codebase
+
+**Why locality matters:**
+- Cluster review = bounded context = stable token cost regardless of project size
+- Inta already does this naturally (per boundary pair)
+- Archi should do the same
+
+**Implementation needed:**
+- tasks.md: add `cluster:` field per task (e.g., `cluster: analysis`)
+- spawn-agent.sh: pass `--cluster` to review/preflight commands
+- cadre.review: filter queue by cluster when `--cluster` specified
+
+**To test**: Compare Archi review tokens for S3 with cluster approach vs current full-scan.
