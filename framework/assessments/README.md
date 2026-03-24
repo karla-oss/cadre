@@ -228,3 +228,34 @@ Use shadcn/ui — Button, Card, Input, Badge, Dialog
 ```
 
 **When @ui-agent is needed**: Project start OR major redesign. NOT every sprint.
+
+## OBS-010: Ticket-per-agent context model (2026-03-24)
+
+**Problem**: Agent context = tasks.md (full) + contracts (full) + data-model (full) = 15k+ tokens.
+As project grows, this becomes unmanageable — drift increases, quality drops.
+
+**Solution**: Jira ticket = ideal agent context size.
+
+**Implementation (pre-Jira):**
+1. `cadre.tasks` generates BOTH:
+   - `tasks.md` (human-readable overview)
+   - `specs/{epic}/tickets/T001.md` (one file per task, minimal context)
+2. `spawn-agent.sh T033` reads ticket file → generates minimal prompt → spawns agent
+3. `validate-ticket.sh` gates: ticket must have owner, file path, contract snippet ≤50 lines, AC ≤5 points
+
+**Ticket file format:**
+```markdown
+# T033: GET /projects/{id}/artifacts/{artifact_id}
+**Owner**: @api-agent
+**File**: api/routers/artifacts.py
+## What to do
+[10-20 lines]
+## Contract snippet
+[only the relevant endpoint — 10-20 lines]
+## AC
+- [3-5 items]
+```
+
+**When Jira arrives:** `spawn-agent.sh` reads from Jira API instead of file. Interface unchanged.
+
+**Priority**: HIGH — implement before S3 to prevent context explosion.
