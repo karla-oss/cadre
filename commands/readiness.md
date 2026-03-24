@@ -1,9 +1,9 @@
 ---
-description: "CADRE Assessment Gate — mandatory checkpoint between plan and execution. Validates readiness, completeness, contradiction, and drift."
+description: "CADRE Readiness Gate — mandatory checkpoint after plan and before task decomposition. Validates readiness, completeness, contradiction, and architectural drift (plan vs spec)."
 cadre:
-  phase: P5-assessment-gate
+  phase: P5a-readiness-gate
   invariants: [I-01, I-02, I-04, I-10, I-11, I-12]
-  assessment_dimensions: [readiness, completeness, contradiction, drift]
+  assessment_dimensions: [readiness, completeness, contradiction, drift-plan-vs-spec]
   owner_required: false
   artifacts_produced: [assessment-report.md]
   artifacts_required: [spec.md, plan.md, data-model.md, contracts/]
@@ -27,9 +27,13 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Purpose
 
-This is the CADRE Assessment Gate — a mandatory checkpoint between contract freeze (plan) and task decomposition. It validates that the project is ready for parallel execution.
+This is `cadre.readiness` — the CADRE Readiness Gate. A mandatory checkpoint between contract freeze (plan) and task decomposition. It validates that the project is architecturally ready for parallel execution.
 
-**This command MUST run after `/cadre.plan` and before `/cadre.tasks`.**
+**This is Group A of two assessment gates. Runs AFTER `/cadre.plan` and BEFORE `/cadre.tasks`. It does NOT require tasks.md — that artifact does not exist yet.**
+
+Two gates, two scopes:
+- `cadre.readiness` (Group A): architectural readiness — plan vs spec ← this command
+- `cadre.preflight` (Group B): implementation readiness — tasks vs contracts
 
 ## Outline
 
@@ -72,6 +76,10 @@ This is the CADRE Assessment Gate — a mandatory checkpoint between contract fr
    - FAIL if owner missing on any contract or module
 
    ### D4: Drift
+   Scope: **Drift ① — architectural drift: plan scope vs spec scope**.
+
+   Does NOT check task-level drift — that is covered by `cadre.preflight` (Group B).
+
    - Plan scope matches spec scope (no undocumented additions)
    - Modules in plan.md match modules listed in spec CADRE Metadata
    - No contracts reference entities not in spec
@@ -96,7 +104,7 @@ This is the CADRE Assessment Gate — a mandatory checkpoint between contract fr
    | Completeness | PASS/WARN/FAIL | [count] |
    | Contradiction | PASS/WARN/FAIL | [count] |
    | Readiness | PASS/WARN/FAIL | [count] |
-   | Drift | PASS/WARN/FAIL | [count] |
+   | Drift (plan vs spec) | PASS/WARN/FAIL | [count] |
 
    **Overall**: READY / READY_WITH_WARNINGS / NOT_READY
 
@@ -112,7 +120,7 @@ This is the CADRE Assessment Gate — a mandatory checkpoint between contract fr
    ### Readiness
    - [finding 1]
 
-   ### Drift
+   ### Drift ① — Architectural (plan vs spec)
    - [finding 1]
 
    ## Recommended Actions
@@ -122,11 +130,11 @@ This is the CADRE Assessment Gate — a mandatory checkpoint between contract fr
    ## Gate Decision
    - **READY**: Proceed to `/cadre.tasks`
    - **READY_WITH_WARNINGS**: Proceed with documented risk acceptance
-   - **NOT_READY**: Fix issues and re-run `/cadre.assess`
+   - **NOT_READY**: Fix issues and re-run `/cadre.readiness`
    ```
 
 5. **Report and recommend**:
-   - If READY: "Assessment Gate passed. Proceed to `/cadre.tasks`"
+   - If READY: "Readiness Gate passed. Proceed to `/cadre.tasks`"
    - If READY_WITH_WARNINGS: List warnings, ask user to acknowledge before proceeding
    - If NOT_READY: List FAIL items, recommend fixes, block progression to tasks
 
