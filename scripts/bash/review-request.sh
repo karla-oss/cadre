@@ -87,7 +87,17 @@ ${FILES_CHANGED:-[no changes detected against HEAD]}
 **Reviewed**:
 TEMPLATE
 
-# 5. Print confirmation
+# 5. Enforce C3: self-check boxes must be checked
+RECORD_FILE="review-request/${TASK_ID}.md"
+if grep -q "- \[ \]" "$RECORD_FILE" 2>/dev/null; then
+  echo -e "${RED}❌ C3 GATE BLOCKED: Self-check boxes are unchecked in review-request/${TASK_ID}.md${NC}"
+  echo -e "${RED}   Open the file and check all boxes before submitting for review.${NC}"
+  echo -e "${YELLOW}   Command: nano review-request/${TASK_ID}.md${NC}"
+  echo -e "${YELLOW}   Change '- [ ]' to '- [x]' for each completed item.${NC}"
+  exit 1
+fi
+
+# 6. Print confirmation
 echo -e "${GREEN}✅ Task ${TASK_ID} → Ready for Review${NC}"
 echo -e "   review-request/${TASK_ID}.md created"
 echo -e "   Archi: run 'bash scripts/bash/review-status.sh' to see queue"
