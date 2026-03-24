@@ -259,3 +259,38 @@ As project grows, this becomes unmanageable — drift increases, quality drops.
 **When Jira arrives:** `spawn-agent.sh` reads from Jira API instead of file. Interface unchanged.
 
 **Priority**: HIGH — implement before S3 to prevent context explosion.
+
+## OBS-011: Sprint-then-Refactor Pattern (2026-03-24)
+
+**Finding from A/B test (T039)**:
+- Variant A (full file, 2.4k tokens): found better solution — delete_by_project() instead of N-loop
+- Variant B (slim ticket, 914 tokens): mechanically correct but missed optimization
+- Conclusion: restricting context restricts solution quality
+
+**Rule: Don't restrict agents during sprint. Refactor after.**
+
+**Pattern: Sprint → Refactor Pass**
+1. Sprint N: agents implement with full context → quality solutions
+2. After Sprint N (or before Sprint N+1): dedicated Refactor Pass
+   - @refactor-agent scans all files > threshold (250 lines)
+   - Proposes micro-module splits by responsibility
+   - Archi approves split plan
+   - Module agents execute splits (file moves, not logic changes)
+   - Tests don't change (imports via shim pattern)
+
+**New CADRE command needed: `cadre.refactor`**
+- Triggered: after Epic close OR between sprints
+- Does: scan → propose splits → create refactor tickets
+- Gate: Archi approves before execution
+- Output: refactor-report.md + tickets/REFACTOR-T001.md etc.
+
+**Why this beats hard limits:**
+- Agents find better abstractions when they see the full picture
+- Refactor is one focused pass, not constant constraint on every agent
+- Separation of concerns: build fast, clean up deliberately
+- Mirrors real-world engineering: ship, then refactor
+
+**Metrics impact:**
+- Sprint tokens: higher (full context)
+- Refactor tokens: one-time cost, offset by faster future sprints
+- Net: likely cheaper after 2-3 sprints with clean micro-modules
