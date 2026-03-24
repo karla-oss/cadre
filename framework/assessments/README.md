@@ -131,3 +131,23 @@ In practice, **merge conflicts are a normal part of development** — not a bloc
 - Unchecked C3 in Phase 2+ = automatic NEEDS_WORK, no exceptions
 
 **Add to review.md**: explicit phase-aware C3 rule.
+
+## OBS-006: Plan-Level Addenda Need Explicit Annotation (2026-03-24)
+
+**Observation**: Archi added `pending` status to AnalysisRun during Contract Freeze (P4) — a correct architectural decision, but not present in spec.md.
+
+**Problem**: This is Drift ① — plan introduced an entity field not traceable to spec. Readiness Gate (P5) D4 would catch this as WARN.
+
+**Rule**: When Archi makes additive decisions during plan that aren't in spec:
+1. Add explicit `## Addenda` section in plan.md
+2. For each addendum: `What was added`, `Why`, `Spec reference closest to it`
+3. This creates a documented trail: spec → plan addendum → implementation
+
+**Why not escalate to Puma?**: Small implemention-level additions (status enum values, internal tracking fields) are Archi authority. Only scope-level additions (new user stories, new functional requirements) need Puma/Super.
+
+**Threshold**: Archi can add without escalation if:
+- Doesn't change observable user behavior
+- Doesn't affect acceptance criteria
+- Is purely technical implementation detail
+
+`pending` status = PASS (internal tracking, not user-visible behavior change).
