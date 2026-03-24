@@ -172,3 +172,19 @@ bash scripts/bash/task-commit.sh T001 "description" --path <module_dir>
 Where `<module_dir>` is declared in sprint-config.md module boundary.
 
 **Why it matters**: Commit bundling makes git history unreadable, breaks `validate-commits.sh` audit, and hides which task introduced which change.
+
+## OBS-008: review-request.sh Two-Step Protocol Required (2026-03-24)
+
+**Pattern**: 4 consecutive failures of @frontend-agent submitting unchecked C3 boxes. Same class every time.
+
+**Root cause**: `review-request.sh` creates the file AND sets status=ready-for-review in one step. Agent runs the script, file is created with `[ ]` boxes, agent exits. Script's C3 gate runs AFTER file is created — but agent is already done.
+
+**Fix: Split into two commands**:
+1. `review-request.sh T056 "desc"` → creates review-request/T056.md with `- [ ]` boxes, status=`draft`, prints "EDIT self-check boxes, then run: review-submit.sh T056"
+2. `review-submit.sh T056` → checks C3 (all `[x]`), if PASS → sets status=`ready-for-review`, adds to queue
+
+**Why this works**: Agent CANNOT skip the edit step — review-submit.sh blocks until boxes are checked. The workflow forces the two-step explicitly.
+
+**Current workaround**: Archi/orchestrator manually fixes review-request files when C3 fails. Acceptable for now, should be automated.
+
+**Priority**: HIGH — fix before T3 test run.
