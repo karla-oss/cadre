@@ -15,6 +15,9 @@ P6a tasks         → task decomposition with ownership
 P6b preflight     → [GATE B] implementation readiness: tasks vs contracts
                     checks: task coverage, ownership compliance, contract compliance, drift②
 P8  implement     → bounded execution (one agent, one owner, one phase)
+
+P8 implement → Ready for Review → P8b review (Archi) → APPROVED → commit → Done
+                                                       → NEEDS_WORK → In Progress (loop)
 ```
 
 ## Gate Summary
@@ -36,6 +39,7 @@ P8  implement     → bounded execution (one agent, one owner, one phase)
 | `tasks.md` | P6a | Task decomposition with ownership and parallelism |
 | `preflight.md` | P6b | Gate B — implementation readiness |
 | `implement.md` | P8 | Bounded execution per owner/phase |
+| `review.md` | P8b | Archi reviews Ready for Review tasks, approves or rejects |
 | `checklist.md` | any | Checklist generation for any domain |
 
 ## Enforcement Scripts
@@ -45,3 +49,7 @@ P8  implement     → bounded execution (one agent, one owner, one phase)
 | `scripts/bash/assert-red.sh` | Between Phase 2 tasks and Phase 3 tasks — confirms tests FAIL before impl |
 | `scripts/bash/task-commit.sh` | After each task — enforces task=commit rule (NOTE-001) |
 | `scripts/bash/validate-commits.sh` | Before Phase 7 Polish — audits all tasks have commits |
+| `scripts/bash/review-request.sh` | Module agent: mark task Ready for Review, create review-request artifact |
+| `scripts/bash/review-approve.sh` | Archi: approve task, commit, mark Done |
+| `scripts/bash/review-reject.sh` | Archi: reject task, write comment, move back to In Progress |
+| `scripts/bash/review-status.sh` | Anyone: show current review queue |
