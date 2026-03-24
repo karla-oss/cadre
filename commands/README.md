@@ -5,6 +5,11 @@ Agent-executable prompts. One file per workflow phase.
 ## Workflow
 
 ```
+PROJECT LEVEL (above Epics):
+P0  project-assess → evaluate Project System Specification readiness
+                     score: GREEN/YELLOW/RED → Super go/no-go decision
+
+EPIC LEVEL (one per feature):
 P1  constitution  → establish project governance principles
 P2  specify       → create system specification (Epic)
 P3  clarify       → resolve ambiguities (max 5 questions)
@@ -35,6 +40,7 @@ P9  validate      → [GATE C] Epic validation: all tasks Done, E2E, quickstart
 
 | File | Phase | Role | Description |
 |------|-------|------|-------------|
+| `project-assess.md` | P0 | Archi | Project-level spec readiness score (IEEE 830 + risk) |
 | `constitution.md` | P1 | Super/Puma | Project governance principles |
 | `specify.md` | P2 | Puma | System specification from natural language |
 | `clarify.md` | P3 | Puma | Ambiguity resolution (interactive, max 5 Q) |
