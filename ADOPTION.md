@@ -85,3 +85,17 @@ When porting a spec-kit mechanism to CADRE:
 The current `assess.md` command is a separate gate. Future consideration: merge assess into an expanded clarify that runs at multiple points (post-spec, post-plan, during execution) rather than only as a one-shot gate.
 
 This means `clarify` evolves from "ask 5 questions about ambiguity" into "structured assessment that can run against any artifact set at any phase."
+
+## Insight: Jira = Separate Operational Layer
+
+**Discovered during T2 test (2026-03-24):**
+
+Jira integration (CADRE I-07) is a separate layer on top of the framework, not part of core workflow. Core CADRE works without Jira:
+- constitution → specify → clarify → plan → assess → tasks → analyze → implement
+
+Jira layer adds:
+- `cadre.taskstoissues` — sync tasks.md to Jira Epic + tickets
+- Visual tracking surface (boards, status, assignment)
+- Bidirectional sync (Jira status → tasks.md checkbox)
+
+Build core framework first. Add Jira layer as optional integration.
