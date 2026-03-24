@@ -105,3 +105,29 @@ In practice, **merge conflicts are a normal part of development** — not a bloc
 - For conflicting parallel: spawn N instances, collect all outputs, Archi reviews and merges manually before committing
 
 **No need to serialize** purely to avoid conflicts. Conflicts = expected = handled by Archi.
+
+## OBS-004: review-request.sh Must Be Non-Negotiable (2026-03-24)
+
+**Incident**: @ingestion-agent completed Phase 1 tasks but did not run `review-request.sh`. Archi reconstructed review-request files from filesystem evidence and approved anyway.
+
+**Problem**: This bypasses the review protocol entirely. If Archi can reconstruct + approve without a formal review-request, the protocol is optional in practice.
+
+**Rule**: Archi MUST NOT reconstruct review-request files. If review-request file is missing:
+1. Task is NOT in queue → Archi cannot review it
+2. Archi notes the gap in review-status output
+3. Archi sends NEEDS_WORK signal back to orchestrator
+4. Orchestrator re-spawns module agent with explicit instruction to run review-request.sh
+5. Only then does the task enter the queue
+
+**Enforcement**: review-approve.sh should check that review-request/T00X.md was created by the agent (not Archi). Add a `created_by` field to review-request template.
+
+## OBS-005: Self-Check C3 Phased Enforcement (2026-03-24)
+
+**Observation**: Phase 1 (scaffolding) tasks had all self-check boxes unchecked. Archi approved anyway — correct decision for scaffolding.
+
+**Rule**: C3 (Self-check) enforcement is phase-dependent:
+- **Phase 1 (Setup)**: C3 optional — no contracts to check, no logic to verify
+- **Phase 2+ (Contract Tests, Implementation)**: C3 MANDATORY — all boxes must be checked before Archi can approve
+- Unchecked C3 in Phase 2+ = automatic NEEDS_WORK, no exceptions
+
+**Add to review.md**: explicit phase-aware C3 rule.
