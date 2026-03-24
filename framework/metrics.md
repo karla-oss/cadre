@@ -94,6 +94,22 @@ Tracks quality and efficiency per sprint/phase. Used to measure improvement over
 - archi_iterations: 1
 - notes: ticket approach A/B test — avg 1k tokens/task
 
+
+### Phase5-US3 — ticket — 2026-03-24
+- tasks_total: 4
+- needs_work_rate: 0%
+- c1_deviations: 0
+- archi_iterations: 1
+- notes: micro-module + ticket approach, avg 3.8k tokens/task
+
+
+### Phase6-Polish — ticket — 2026-03-24
+- tasks_total: 4
+- needs_work_rate: 0%
+- c1_deviations: 0
+- archi_iterations: 1
+- notes: ticket approach, avg 3k tokens/task
+
 ## Target Metrics (1 task per agent with ticket files)
 
 | Metric | Current (batch) | Target (ticket) |
