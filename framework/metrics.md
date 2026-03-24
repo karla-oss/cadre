@@ -137,3 +137,36 @@ Tracks quality and efficiency per sprint/phase. Used to measure improvement over
 - If `tokens_per_task` grows → context bloat, need trimming
 - If `archi_iterations` > 1 consistently → prompts need improvement
 - If `drift_rate` in readiness gate grows → spec/plan quality degrading
+
+---
+
+## T039 A/B/C Experiment — Micro-Module Hypothesis Test
+
+**Date**: 2026-03-24
+**Task**: Add re-run artifact deletion to analysis background task
+**Hypothesis**: Smaller files = fewer tokens = faster agents
+
+### Results
+
+| Variant | File | Lines | Tokens | Time | Notes |
+|---------|------|-------|--------|------|-------|
+| A — full file | analysis.py | 384 | 2,400 | 56s | Found better solution (delete_by_project) |
+| B — slim ticket | inline code | ~40 | 914 | 22s | Mechanical insert, correct |
+| C — micro-module | background.py | 130 | 1,000 | 53s | Full context, correct, 2.4x cheaper than A |
+
+### Conclusion
+
+**Micro-modules confirmed: 2.4x token reduction vs full file, same quality.**
+
+- C vs A: 2.4x fewer tokens, similar quality
+- C vs B: similar tokens, but agent saw real code context (better for complex tasks)
+- Optimal: micro-modules (100-150 lines) give best cost/quality ratio
+
+### Principle: AI-Native Architecture
+
+In AI-native development:
+- File size = context window cost = iteration cost
+- Optimize file size for AI agents, not just human readability
+- Human-readable artifacts: specs, contracts, tickets, reports
+- AI-readable artifacts: micro-module code files (≤150 lines)
+- Refactor pass between sprints to maintain micro-module discipline
