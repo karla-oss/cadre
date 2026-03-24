@@ -368,3 +368,23 @@ Cluster B: api/routers/analysis_router/
 - cadre.review: filter queue by cluster when `--cluster` specified
 
 **To test**: Compare Archi review tokens for S3 with cluster approach vs current full-scan.
+
+## BACKLOG: cadre.reverse — Codebase → Spec (2026-03-24)
+
+**Idea**: Given a finished, deterministic codebase → decompose via AST → generate CADRE-compatible spec.
+
+**How**:
+- AST parsing: endpoints → API contract, Pydantic models → data-model, function signatures → AC
+- Micro-modules make this reliable: each file = one responsibility = one contract fragment
+- Output: spec.md + data-model.md + contracts/ + tasks.md
+
+**Use cases**:
+1. Legacy code → auto-generate spec → apply CADRE to existing project
+2. Drift detection: compare generated spec vs original → find where impl diverged from intent
+3. Living documentation: always in sync with code
+
+**Why micro-modules are prerequisite**:
+- 400-line monolith → ambiguous spec (what does this file "do"?)
+- 80-line micro-module → clear spec (one function = one contract = one AC)
+
+**Torres: private finding — not to be disclosed publicly yet.**
