@@ -83,3 +83,25 @@ Gate run → WARN/FAIL findings → assign to responsible agent → fix → re-r
 - sprint-config-template.md: add optional `@infra-agent` section with explicit root file list
 - tasks.md rules: `[@infra-agent]` or `[@archi]` for root-level tasks
 - preflight D2 check: exclude known infra files from boundary violation warnings IF declared in sprint-config
+
+## OBS-002a: Conflict Resolution for Parallel Agents (addendum)
+
+**Clarification to OBS-002**: The "strictly non-overlapping files" rule is a simplification.
+
+In practice, **merge conflicts are a normal part of development** — not a blocker for parallel spawning.
+
+**Revised approach**:
+- `[P]` = safe to run in parallel regardless of file overlap
+- File overlap → git merge conflict on completion → resolved by Archi before commit
+- Archi's review step (P8b) is the natural conflict resolution point
+
+**Two tiers of parallelism**:
+1. **Clean parallel** (different files): agents commit independently, no merge needed
+2. **Conflicting parallel** (shared files): agents work concurrently, Archi merges on review
+
+**Orchestrator responsibility**:
+- Detect file overlap statically from task descriptions
+- For clean parallel: spawn N instances, each auto-commits via review-approve.sh
+- For conflicting parallel: spawn N instances, collect all outputs, Archi reviews and merges manually before committing
+
+**No need to serialize** purely to avoid conflicts. Conflicts = expected = handled by Archi.
