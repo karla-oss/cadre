@@ -37,6 +37,7 @@ if [[ ${#FILES[@]} -eq 0 ]]; then
 fi
 
 # 2. Parse each file
+declare -a DRAFT=()
 declare -a READY=()
 declare -a NEEDS_WORK=()
 declare -a APPROVED=()
@@ -50,6 +51,9 @@ for FILE in "${FILES[@]}"; do
   COMMENT="$(grep -m1 '^\*\*Comment\*\*:' "$FILE" 2>/dev/null | sed 's/\*\*Comment\*\*: //' | tr -d '\r')"
 
   case "$STATUS" in
+    draft)
+      DRAFT+=("${TASK_ID}|${AGENT}|${CREATED}|${DESCRIPTION}")
+      ;;
     ready-for-review)
       READY+=("${TASK_ID}|${AGENT}|${CREATED}|${DESCRIPTION}")
       ;;
@@ -67,6 +71,20 @@ done
 
 # 3. Print grouped output
 echo -e "${BOLD}📋 CADRE Review Queue${NC}"
+echo ""
+
+# DRAFT (created but not submitted)
+COUNT=${#DRAFT[@]}
+echo -e "${GRAY}DRAFT (${COUNT}):${NC}"
+if [[ $COUNT -eq 0 ]]; then
+  echo -e "  ${GRAY}(none)${NC}"
+else
+  for ENTRY in "${DRAFT[@]}"; do
+    IFS='|' read -r TID AGENT CREATED DESC <<< "$ENTRY"
+    echo -e "  ${BOLD}${TID}${NC} — @${AGENT} — ${CREATED} — \"${DESC}\""
+  done
+fi
+
 echo ""
 
 # READY FOR REVIEW
