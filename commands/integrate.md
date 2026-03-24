@@ -20,12 +20,18 @@ This command is executed by **Inta** (Integration Agent). See `framework/roles/i
 ## When to run
 
 After all module tasks are Done (approved by Archi), before `/cadre.validate`.
-Triggered by Archi:
 
+**Trigger**: Archi checks queue after the last `review-approve.sh`. When queue is empty → Archi spawns Inta:
 ```bash
-# Archi spawns Inta after last review-approve.sh
+# Archi: verify queue is empty first
+bash scripts/bash/review-status.sh
+# → "✅ Queue empty — nothing to review."
+
+# Then spawn Inta
 /cadre.integrate
 ```
+
+**Prerequisite for validate**: `integration-report.md` must exist with status INTEGRATED before `/cadre.validate` can run.
 
 ## Outline
 

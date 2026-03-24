@@ -4,7 +4,7 @@ cadre:
   phase: P9-epic-validation
   invariants: [I-01, I-04, I-06, I-10, I-12]
   role: archi
-  artifacts_required: [spec.md, plan.md, tasks.md, contracts/, review-request/]
+  artifacts_required: [spec.md, plan.md, tasks.md, contracts/, review-request/, integration-report.md]
   artifacts_produced: [validate-report.md]
 triggers:
   - condition: all tasks in tasks.md have status Done (marked [X])
@@ -29,12 +29,22 @@ This is evidence collection that the system as a whole fulfils the Epic contract
 
 ## Outline
 
-1. **Setup**: Verify all tasks in `tasks.md` are marked `[X]`. If any unchecked task exists:
+1. **Setup**: Verify prerequisites before proceeding:
+
+   a. All tasks in `tasks.md` are marked `[X]`. If any unchecked task exists:
    ```
    ❌ VALIDATION BLOCKED: tasks.md has incomplete tasks.
    Remaining: [list T00X items]
    Run /cadre.review to process remaining tasks first.
    ```
+
+   b. `integration-report.md` exists and status is INTEGRATED. If missing or VIOLATIONS_FOUND:
+   ```
+   ❌ VALIDATION BLOCKED: Integration gate not passed.
+   Run /cadre.integrate first. Resolve all violations before validate.
+   ```
+
+   If `integration-report.md` exists and overall is INTEGRATED → V3 (Contract Fulfilment) auto-passes. Do not re-run cross-module boundary checks already covered by Inta.
 
 2. **Load artifacts**:
    - **REQUIRED**: spec.md — acceptance criteria and success criteria

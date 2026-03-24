@@ -5,7 +5,7 @@ cadre:
   invariants: [I-02, I-03, I-04, I-07]
   owner_required: true
   artifacts_produced: [tasks.md]
-  artifacts_required: [plan.md, spec.md, assessment-report]
+  artifacts_required: [plan.md, spec.md, assessment-report.md]
 handoffs:
   - label: Run Preflight Gate
     agent: cadre.preflight
