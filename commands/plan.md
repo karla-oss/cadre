@@ -4,7 +4,7 @@ cadre:
   phase: P4-contract-freeze
   invariants: [I-01, I-02, I-04, I-05, I-11]
   owner_required: true
-  artifacts_produced: [plan.md, data-model.md, contracts/, research.md, quickstart.md]
+  artifacts_produced: [plan.md, data-model.md, contracts/, research.md, quickstart.md, sprint-config.md]
   artifacts_required: [spec.md, constitution.md]
   triggers_assessment: true
 handoffs: 
@@ -93,7 +93,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Add `## CADRE Contract Status` section to plan.md:
      ```markdown
      ## CADRE Contract Status
-     - **Frozen contracts**: [list data-model.md + each file in contracts/]
+     - **Frozen contracts**: [list data-model.md + each file in contracts/ + sprint-config.md]
      - **Contract owner**: [Architect / Contract Governor]
      - **Freeze date**: [DATE]
      - **Status**: Frozen — changes require Architect approval and re-assessment
@@ -186,7 +186,16 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Add only new technology from current plan
    - Preserve manual additions between markers
 
-**Output**: data-model.md, /contracts/*, quickstart.md, agent-specific file
+4. **Generate `sprint-config.md`** (Module Agent expertise declaration):
+   - Use `templates/sprint-config-template.md` as base
+   - For each module identified in plan.md: create a `### @[module]-agent` section
+   - Fill expertise from tech stack decisions made in this plan
+   - Fill "Does NOT know about" from module boundaries
+   - Fill Inta Expertise Context (producer/consumer map, test paths)
+   - Mark all three artifacts as frozen (data-model.md, contracts/, sprint-config.md)
+   - This file is read by module agents at spawn time — must be precise and complete
+
+**Output**: data-model.md, /contracts/*, quickstart.md, sprint-config.md, agent-specific file
 
 ## Key rules
 

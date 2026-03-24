@@ -89,7 +89,11 @@ You **MUST** consider the user input before proceeding (if not empty).
      - Display the table showing all checklists passed
      - Automatically proceed to step 3
 
-3. **CADRE Bounded Execution Check** (I-02, I-03):
+3. **Load Expertise + Bounded Execution Check** (I-02, I-03):
+   - Read `sprint-config.md` — find the section matching your `[@owner]` tag
+   - Load your expertise declaration: language, framework, patterns, testing tools
+   - Internalize "Does NOT know about" — these are hard boundaries on your knowledge scope
+   - Output: "Expertise loaded: [language/framework] | Module: [module]/"]
    - Identify the current agent/owner executing this command
    - Filter tasks.md to show ONLY tasks owned by this agent (matching `[@owner]` tag)
    - If agent has no owned tasks: ERROR "CADRE I-02: No tasks assigned to this agent. Check task ownership."
