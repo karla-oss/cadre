@@ -23,6 +23,6 @@
 ## After task complete
 
 1. Mark [X] in tasks.md
-2. Run: `bash scripts/bash/review-request.sh {TASK_ID} "description"`
-3. Fill self-check in review-request/{TASK_ID}.md
-4. Run: `bash scripts/bash/review-submit.sh {TASK_ID}`
+2. Run: `bash /workspace/projects/cadre/scripts/bash/review-request.sh {TASK_ID} "description"`
+3. Fill self-check in review-request/{TASK_ID}.md — change ALL `- [ ]` to `- [x]`
+4. Run: `bash /workspace/projects/cadre/scripts/bash/review-submit.sh {TASK_ID}`
