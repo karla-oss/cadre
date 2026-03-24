@@ -183,12 +183,16 @@ You **MUST** consider the user input before proceeding (if not empty).
    - For parallel tasks [P], continue with successful tasks, report failed ones
    - Provide clear error messages with context for debugging
    - Suggest next steps if implementation cannot proceed
-   **IMPORTANT — Task Completion Protocol (NOTE-001)**: After completing each task:
+   **IMPORTANT — Task Completion Protocol (NOTE-001 + I-06)**: After completing each task:
    1. Mark task as [X] in tasks.md
-   2. Run immediately: `bash scripts/bash/task-commit.sh T00X "short description"`
-   3. Verify commit succeeds before proceeding to the next task
+   2. Run: `bash scripts/bash/review-request.sh T00X "short description of what was done"`
+   3. **STOP. Do NOT commit.** Archi picks up from review queue.
+   4. Wait for Archi verdict:
+      - **APPROVED** → Archi runs `review-approve.sh` and commits
+      - **NEEDS_WORK** → read comment in `review-request/T00X.md`, fix, re-run `review-request.sh`
 
-   DO NOT batch commits. DO NOT proceed to the next task until git commit succeeds. Violation = NOTE-001 class incident.
+   DO NOT commit yourself. DO NOT proceed to the next task until Archi approves.
+   Committing without review = bypasses Human Final Authority (CADRE I-06). Treat as incident.
 
 10. **CADRE Drift Check** (I-01, I-10) — run after every phase checkpoint:
    - Compare implemented code against frozen contracts (data-model.md, contracts/)
