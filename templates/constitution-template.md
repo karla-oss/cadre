@@ -1,6 +1,18 @@
 # [PROJECT_NAME] Constitution
 <!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
 
+## Project Phase
+
+**Phase**: poc | mvp | production
+<!-- Choose one. This controls gate strictness across all CADRE commands.
+     See framework/workflow/README.md for gate behavior per phase. -->
+
+**Phase escalation criteria**:
+- POC → MVP: [e.g. hypothesis validated, first external user sprint]
+- MVP → Production: [e.g. >100 users OR team >3 OR SLA required]
+
+---
+
 ## Core Principles
 
 ### [PRINCIPLE_1_NAME]
