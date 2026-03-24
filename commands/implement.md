@@ -1,5 +1,12 @@
 ---
-description: Execute the implementation plan by processing and executing all tasks defined in tasks.md
+description: Execute tasks within bounded ownership scope. CADRE I-03 enforced — agent operates only on owned tasks.
+cadre:
+  phase: P7-execution
+  invariants: [I-02, I-03, I-04, I-08, I-09, I-10]
+  owner_required: true
+  artifacts_produced: [code, tests, deliverables]
+  artifacts_required: [tasks.md, plan.md, contracts/]
+  bounded_execution: true
 scripts:
   sh: scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks
   ps: scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks
@@ -82,7 +89,19 @@ You **MUST** consider the user input before proceeding (if not empty).
      - Display the table showing all checklists passed
      - Automatically proceed to step 3
 
-3. Load and analyze the implementation context:
+3. **CADRE Bounded Execution Check** (I-02, I-03):
+   - Identify the current agent/owner executing this command
+   - Filter tasks.md to show ONLY tasks owned by this agent (matching `[@owner]` tag)
+   - If agent has no owned tasks: ERROR "CADRE I-02: No tasks assigned to this agent. Check task ownership."
+   - Display owned task count and scope boundaries (files/modules this agent may touch)
+   - **BOUNDARY RULE**: Agent MUST NOT modify files outside owned task scope
+   - If a task requires changes to files owned by another agent: STOP and create escalation:
+     ```
+     ⚠️ CADRE ESCALATION (I-03): Task T0XX requires modifying [file] which is outside owned scope.
+     Action: Request contract change via Architect, or reassign task to owning agent.
+     ```
+
+4. Load and analyze the implementation context:
    - **REQUIRED**: Read tasks.md for the complete task list and execution plan
    - **REQUIRED**: Read plan.md for tech stack, architecture, and file structure
    - **IF EXISTS**: Read data-model.md for entities and relationships
@@ -162,12 +181,30 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Suggest next steps if implementation cannot proceed
    - **IMPORTANT** For completed tasks, make sure to mark the task off as [X] in the tasks file.
 
-9. Completion validation:
-   - Verify all required tasks are completed
-   - Check that implemented features match the original specification
+9. **CADRE Drift Check** (I-01, I-10) — run after every phase checkpoint:
+   - Compare implemented code against frozen contracts (data-model.md, contracts/)
+   - Check: do function signatures match contract definitions?
+   - Check: do data structures match data-model.md entities?
+   - Check: any files modified outside owned scope?
+   - If drift detected: STOP and report:
+     ```
+     ⚠️ CADRE DRIFT DETECTED (I-01):
+     - Contract: [contract file]
+     - Expected: [contract definition]
+     - Actual: [implementation]
+     - Action: Fix implementation to match contract, OR escalate contract change to Architect
+     ```
+   - Task result MUST be one of:
+     - **Deliverable**: code/test that matches contract and passes validation
+     - **Reasoned Rejection**: documented explanation why task cannot/should not be done now
+   - Tasks CANNOT simply stall. If blocked, produce Reasoned Rejection with escalation.
+
+10. Completion validation:
+   - Verify all owned tasks are completed (deliverable or reasoned rejection)
+   - Check that implemented features match frozen contracts
    - Validate that tests pass and coverage meets requirements
-   - Confirm the implementation follows the technical plan
-   - Report final status with summary of completed work
+   - Confirm no files outside owned scope were modified
+   - Report final status with summary of completed work and any escalations
 
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit.tasks` first to regenerate the task list.
 

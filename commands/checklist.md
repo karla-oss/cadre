@@ -1,5 +1,9 @@
 ---
-description: Generate a custom checklist for the current feature based on user requirements.
+description: Generate domain-specific quality checklist. Used as CADRE validation evidence (I-10).
+cadre:
+  phase: any
+  invariants: [I-10, I-11]
+  artifacts_produced: [checklists/*.md]
 scripts:
   sh: scripts/bash/check-prerequisites.sh --json
   ps: scripts/powershell/check-prerequisites.ps1 -Json

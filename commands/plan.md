@@ -1,12 +1,22 @@
 ---
-description: Execute the implementation planning workflow using the plan template to generate design artifacts.
+description: Execute Contract Freeze — decompose spec into plan, data-model, and API contracts. Triggers CADRE Assessment Gate.
+cadre:
+  phase: P4-contract-freeze
+  invariants: [I-01, I-02, I-04, I-05, I-11]
+  owner_required: true
+  artifacts_produced: [plan.md, data-model.md, contracts/, research.md, quickstart.md]
+  artifacts_required: [spec.md, constitution.md]
+  triggers_assessment: true
 handoffs: 
-  - label: Create Tasks
-    agent: speckit.tasks
-    prompt: Break the plan into tasks
+  - label: Run Assessment Gate
+    agent: cadre.assess
+    prompt: Run readiness, completeness, contradiction, and drift assessment on the plan
     send: true
+  - label: Create Tasks
+    agent: cadre.tasks
+    prompt: Break the plan into tasks
   - label: Create Checklist
-    agent: speckit.checklist
+    agent: cadre.checklist
     prompt: Create a checklist for the following domain...
 scripts:
   sh: scripts/bash/setup-plan.sh --json
@@ -73,7 +83,26 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Phase 1: Update agent context by running the agent script
    - Re-evaluate Constitution Check post-design
 
-4. **Stop and report**: Command ends after Phase 2 planning. Report branch, IMPL_PLAN path, and generated artifacts.
+4. **CADRE Contract Freeze** (I-01):
+   - Add `## CADRE Contract Status` section to plan.md:
+     ```markdown
+     ## CADRE Contract Status
+     - **Frozen contracts**: [list data-model.md + each file in contracts/]
+     - **Contract owner**: [Architect / Contract Governor]
+     - **Freeze date**: [DATE]
+     - **Status**: Frozen — changes require Architect approval and re-assessment
+     - **Dependent modules**: [list modules that will implement against these contracts]
+     ```
+   - Validate: every entity in data-model.md must have an owner module assigned
+   - Validate: every contract in contracts/ must specify which modules are producer vs consumer
+   - ERROR if any contract has no assigned owner: "CADRE I-02 violation: contract without explicit owner"
+
+5. **Assessment Gate trigger** (I-01, I-10):
+   - After plan completion, output: `⚠️ CADRE GATE: Plan complete. Assessment Gate REQUIRED before task decomposition.`
+   - Recommend: `/cadre.assess` to run readiness, completeness, contradiction, drift checks
+   - Do NOT proceed to `/cadre.tasks` until assessment passes
+
+6. **Stop and report**: Command ends after planning. Report branch, IMPL_PLAN path, generated artifacts, and contract freeze status.
 
 5. **Check for extension hooks**: After reporting, check if `.specify/extensions.yml` exists in the project root.
    - If it exists, read it and look for entries under the `hooks.after_plan` key

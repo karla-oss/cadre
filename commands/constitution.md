@@ -1,8 +1,13 @@
 ---
-description: Create or update the project constitution from interactive or provided principle inputs, ensuring all dependent templates stay in sync.
+description: Create or update the Project Mapping Spec (CADRE constitution) — project-specific governance, roles, principles, and module ownership map.
+cadre:
+  phase: P1-governance-setup
+  invariants: [I-05, I-06, I-07, I-11, I-12]
+  artifacts_produced: [constitution.md, role-registry.md]
+  artifacts_required: []
 handoffs: 
   - label: Build Specification
-    agent: speckit.specify
+    agent: cadre.specify
     prompt: Implement the feature specification based on the updated constitution. I want to build...
 ---
 

@@ -1,13 +1,19 @@
 ---
-description: Create or update the feature specification from a natural language feature description.
+description: Create or update the System Specification from a natural language scope description. Maps to CADRE Epic.
+cadre:
+  phase: P2-specification
+  invariants: [I-02, I-04, I-11]
+  owner_required: true
+  artifacts_produced: [spec.md, checklists/requirements.md]
+  artifacts_required: [constitution.md]
 handoffs: 
-  - label: Build Technical Plan
-    agent: speckit.plan
-    prompt: Create a plan for the spec. I am building with...
   - label: Clarify Spec Requirements
-    agent: speckit.clarify
+    agent: cadre.clarify
     prompt: Clarify specification requirements
     send: true
+  - label: Build Technical Plan
+    agent: cadre.plan
+    prompt: Create a plan for the spec. I am building with...
 scripts:
   sh: scripts/bash/create-new-feature.sh "{ARGS}"
   ps: scripts/powershell/create-new-feature.ps1 "{ARGS}"
@@ -214,7 +220,21 @@ Given that feature description, do this:
 
    d. **Update Checklist**: After each validation iteration, update the checklist file with current pass/fail status
 
-7. Report completion with branch name, spec file path, checklist results, and readiness for the next phase (`/speckit.clarify` or `/speckit.plan`).
+7. **CADRE Ownership & Traceability** (CADRE I-02, I-04):
+   - Add a `## CADRE Metadata` section at the top of the spec file (after title):
+     ```markdown
+     ## CADRE Metadata
+     - **Owner**: [Human Supervisor or PM who authored/approved this spec]
+     - **Epic ID**: [Jira Epic key if available, or TBD]
+     - **Modules affected**: [List of modules this spec touches — used for ownership boundaries]
+     - **Contract dependencies**: [List of existing frozen contracts this spec depends on, or "None — new scope"]
+     - **Created**: [DATE]
+     - **Status**: Draft | Under Review | Approved | Frozen
+     ```
+   - If owner is not specified in user input, mark as `[NEEDS OWNER]` — this MUST be resolved before `/cadre.plan`
+   - If modules affected overlap with another active spec, flag: `⚠️ OWNERSHIP CONFLICT: Module X is also claimed by spec Y. Escalate to Human Supervisor (CADRE I-06)`
+
+8. Report completion with branch name, spec file path, checklist results, and readiness for the next phase (`/cadre.clarify` or `/cadre.plan`).
 
 8. **Check for extension hooks**: After reporting completion, check if `.specify/extensions.yml` exists in the project root.
    - If it exists, read it and look for entries under the `hooks.after_specify` key

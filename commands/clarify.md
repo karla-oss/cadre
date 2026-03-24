@@ -1,8 +1,14 @@
 ---
-description: Identify underspecified areas in the current feature spec by asking up to 5 highly targeted clarification questions and encoding answers back into the spec.
+description: CADRE Assessment function (completeness + contradiction). Identify underspecified areas, ownership gaps, and contract conflicts.
+cadre:
+  phase: P3-exploration
+  invariants: [I-08, I-09, I-11]
+  assessment_dimensions: [completeness, contradiction]
+  artifacts_produced: [updated spec.md]
+  artifacts_required: [spec.md]
 handoffs: 
   - label: Build Technical Plan
-    agent: speckit.plan
+    agent: cadre.plan
     prompt: Create a plan for the spec. I am building with...
 scripts:
    sh: scripts/bash/check-prerequisites.sh --json --paths-only

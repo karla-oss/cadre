@@ -1,12 +1,18 @@
 ---
-description: Generate an actionable, dependency-ordered tasks.md for the feature based on available design artifacts.
+description: Generate dependency-ordered tasks with explicit ownership from assessed plan artifacts.
+cadre:
+  phase: P6-task-decomposition
+  invariants: [I-02, I-03, I-04, I-07]
+  owner_required: true
+  artifacts_produced: [tasks.md]
+  artifacts_required: [plan.md, spec.md, assessment-report]
 handoffs: 
   - label: Analyze For Consistency
-    agent: speckit.analyze
+    agent: cadre.analyze
     prompt: Run a project analysis for consistency
     send: true
   - label: Implement Project
-    agent: speckit.implement
+    agent: cadre.implement
     prompt: Start the implementation in phases
     send: true
 scripts:
@@ -141,7 +147,7 @@ The tasks.md should be immediately executable - each task must be specific enoug
 Every task MUST strictly follow this format:
 
 ```text
-- [ ] [TaskID] [P?] [Story?] Description with file path
+- [ ] [TaskID] [P?] [Story?] [@Owner] Description with file path
 ```
 
 **Format Components**:
@@ -155,18 +161,22 @@ Every task MUST strictly follow this format:
    - Foundational phase: NO story label  
    - User Story phases: MUST have story label
    - Polish phase: NO story label
-5. **Description**: Clear action with exact file path
+5. **[@Owner]**: REQUIRED (CADRE I-02). Module Agent or role responsible for this task
+   - Format: [@agent-name] or [@role-name]
+   - Every task MUST have an owner. ERROR if missing: "CADRE I-02 violation: task without owner"
+   - Owner determines bounded execution scope (CADRE I-03): agent may only touch files within owned tasks
+6. **Description**: Clear action with exact file path
 
 **Examples**:
 
-- ✅ CORRECT: `- [ ] T001 Create project structure per implementation plan`
-- ✅ CORRECT: `- [ ] T005 [P] Implement authentication middleware in src/middleware/auth.py`
-- ✅ CORRECT: `- [ ] T012 [P] [US1] Create User model in src/models/user.py`
-- ✅ CORRECT: `- [ ] T014 [US1] Implement UserService in src/services/user_service.py`
-- ❌ WRONG: `- [ ] Create User model` (missing ID and Story label)
-- ❌ WRONG: `T001 [US1] Create model` (missing checkbox)
-- ❌ WRONG: `- [ ] [US1] Create User model` (missing Task ID)
-- ❌ WRONG: `- [ ] T001 [US1] Create model` (missing file path)
+- ✅ CORRECT: `- [ ] T001 [@lead] Create project structure per implementation plan`
+- ✅ CORRECT: `- [ ] T005 [P] [@backend] Implement authentication middleware in src/middleware/auth.py`
+- ✅ CORRECT: `- [ ] T012 [P] [US1] [@backend] Create User model in src/models/user.py`
+- ✅ CORRECT: `- [ ] T014 [US1] [@backend] Implement UserService in src/services/user_service.py`
+- ❌ WRONG: `- [ ] Create User model` (missing ID, owner, and Story label)
+- ❌ WRONG: `T001 [US1] Create model` (missing checkbox and owner)
+- ❌ WRONG: `- [ ] [US1] Create User model` (missing Task ID and owner)
+- ❌ WRONG: `- [ ] T001 [US1] Create model` (missing owner and file path)
 
 ### Task Organization
 

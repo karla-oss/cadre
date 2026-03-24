@@ -1,5 +1,11 @@
 ---
-description: Perform a non-destructive cross-artifact consistency and quality analysis across spec.md, plan.md, and tasks.md after task generation.
+description: CADRE cross-artifact consistency analysis. Covers Assessment Gate dimensions (completeness, contradiction, drift) plus ownership and contract compliance.
+cadre:
+  phase: P5-assessment-gate
+  invariants: [I-01, I-02, I-03, I-04, I-10, I-11, I-12]
+  assessment_dimensions: [completeness, contradiction, drift, contract_compliance, ownership]
+  artifacts_produced: [analysis-report]
+  artifacts_required: [spec.md, plan.md, tasks.md]
 scripts:
   sh: scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks
   ps: scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks
@@ -113,6 +119,27 @@ Focus on high-signal findings. Limit to 50 findings total; aggregate remainder i
 - Data entities referenced in plan but absent in spec (or vice versa)
 - Task ordering contradictions (e.g., integration tasks before foundational setup tasks without dependency note)
 - Conflicting requirements (e.g., one requires Next.js while other specifies Vue)
+
+#### G. CADRE Ownership Compliance (I-02)
+
+- Tasks without `[@owner]` tag
+- Contracts without assigned owner
+- Modules claimed by multiple specs (ownership conflict)
+- Tasks that modify files outside owner's declared scope (I-03 violation)
+
+#### H. CADRE Contract Compliance (I-01)
+
+- Tasks that would modify frozen contracts without Architect approval
+- Implementation tasks that reference entities not in data-model.md
+- API calls to endpoints not defined in contracts/
+- Data structures that deviate from frozen schema
+
+#### I. CADRE Readiness (I-10)
+
+- Spec without CADRE Metadata section (owner, status, modules)
+- Plan without Contract Status section (freeze date, dependent modules)
+- Tasks without assessment-report prerequisite
+- Missing quickstart.md validation scenarios for key contracts
 
 ### 5. Severity Assignment
 
