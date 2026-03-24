@@ -245,3 +245,55 @@ The model is designed for multi-agent execution where AI agents need hard bounda
                 module agents
                 via review loop
 ```
+
+---
+
+## Core Principle: One Role = One Agent, No Exceptions
+
+**Role mixing is a CADRE violation.** Every agent has exactly one role. No agent combines roles.
+
+| Violation Example | Why Wrong | Correct Action |
+|---|---|---|
+| Archi writes `api/main.py` | Implementation = Module Agent domain | Reassign task to @api-agent |
+| @api-agent reviews @cli-agent's code | Cross-module review = Archi domain | Escalate to Archi |
+| Inta edits `contracts/` to fix a mismatch | Contract changes = Archi domain | Inta escalates to Archi |
+| Puma adds architecture to spec.md | Architecture = Archi domain | Puma writes requirements, Archi translates to architecture in plan.md |
+| Module Agent commits without review | Commit authority = Archi domain | Run review-request.sh, wait for Archi approval |
+
+**If an agent finds itself operating outside its role → STOP. Log. Escalate.**
+
+---
+
+## Module Agent Expertise: Dynamic, Not Static
+
+Unlike Super, Puma, Archi, and Inta whose expertise is **fixed** (they are always the same specialists), Module Agent expertise is **declared at spawn time** and matches the specific technology stack of the current project.
+
+**Same role, different expertise per project:**
+
+| Project | @api-agent expertise | @cli-agent expertise |
+|---|---|---|
+| Python/FastAPI project | FastAPI, SQLAlchemy, Pydantic, pytest | Click, requests, unittest |
+| Go/Chi project | Chi router, sqlx, Go testing | Cobra, net/http client |
+| Node/Express project | Express, Prisma, Jest | Commander.js, axios, Jest |
+
+**How expertise is declared:**
+
+When a Module Agent is spawned, its task prompt MUST include an explicit expertise declaration:
+
+```
+## Your Expertise
+You are a world-class Python/FastAPI engineer. You have deep knowledge of:
+- FastAPI route design, dependency injection, Pydantic v2 models
+- SQLite with raw sqlite3, connection management, FK constraints
+- pytest with TestClient, fixtures, parametrize
+- HTTP status codes and REST semantics
+
+You are NOT expected to know about: cli/ module, Click, or any other module's internals.
+```
+
+This declaration:
+- Sets the agent's specialization for this task
+- Prevents it from making decisions outside its tech domain
+- Makes expertise explicit and auditable
+
+**Archi declares module expertise** when writing `tasks.md` — the tech stack per module is defined at plan time, not improvised at implementation time.
