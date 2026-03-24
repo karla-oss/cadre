@@ -1,7 +1,7 @@
 ---
 description: Execute tasks within bounded ownership scope. CADRE I-03 enforced — agent operates only on owned tasks.
 cadre:
-  phase: P7-execution
+  phase: P8-execution
   invariants: [I-02, I-03, I-04, I-08, I-09, I-10]
   owner_required: true
   artifacts_produced: [code, tests, deliverables]

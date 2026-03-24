@@ -1,15 +1,15 @@
 ---
 description: Generate dependency-ordered tasks with explicit ownership from assessed plan artifacts.
 cadre:
-  phase: P6-task-decomposition
+  phase: P6a-task-decomposition
   invariants: [I-02, I-03, I-04, I-07]
   owner_required: true
   artifacts_produced: [tasks.md]
   artifacts_required: [plan.md, spec.md, assessment-report]
-handoffs: 
-  - label: Analyze For Consistency
-    agent: cadre.analyze
-    prompt: Run a project analysis for consistency
+handoffs:
+  - label: Run Preflight Gate
+    agent: cadre.preflight
+    prompt: Run preflight gate — task coverage, ownership, contract compliance, drift
     send: true
   - label: Implement Project
     agent: cadre.implement
@@ -73,7 +73,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 3. **CADRE Assessment Gate Check** (I-01, I-10):
    - Check if an assessment report exists for this feature (FEATURE_DIR/assessment-report.md or equivalent)
-   - If assessment report missing: WARN "⚠️ CADRE: No assessment report found. Assessment Gate (cadre.assess) SHOULD run before task decomposition. Proceed? (yes/no)"
+   - If assessment report missing: WARN "⚠️ CADRE: No assessment report found. Readiness Gate (cadre.readiness) SHOULD run before task decomposition. Proceed? (yes/no)"
    - If assessment report exists with CRITICAL issues: ERROR "CADRE I-10: Assessment has unresolved CRITICAL issues. Fix before decomposition."
    - If assessment report exists and clean: proceed
 

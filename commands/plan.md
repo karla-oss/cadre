@@ -9,7 +9,7 @@ cadre:
   triggers_assessment: true
 handoffs: 
   - label: Run Assessment Gate
-    agent: cadre.assess
+    agent: cadre.readiness
     prompt: Run readiness, completeness, contradiction, and drift assessment on the plan
     send: true
   - label: Create Tasks
@@ -105,7 +105,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 6. **Assessment Gate trigger** (I-01, I-10):
    - After plan completion, output: `⚠️ CADRE GATE: Plan complete. Assessment Gate REQUIRED before task decomposition.`
-   - Recommend: `/cadre.assess` to run readiness, completeness, contradiction, drift checks
+   - Recommend: `/cadre.readiness` to run readiness, completeness, contradiction, drift checks
    - Do NOT proceed to `/cadre.tasks` until assessment passes
 
 7. **Stop and report**: Command ends after planning. Report branch, IMPL_PLAN path, generated artifacts, and contract freeze status.

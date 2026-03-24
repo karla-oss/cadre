@@ -1,12 +1,12 @@
 ---
 description: "CADRE Readiness Gate — mandatory checkpoint after plan and before task decomposition. Validates readiness, completeness, contradiction, and architectural drift (plan vs spec)."
 cadre:
-  phase: P5a-readiness-gate
+  phase: P5-readiness-gate
   invariants: [I-01, I-02, I-04, I-10, I-11, I-12]
   assessment_dimensions: [readiness, completeness, contradiction, drift-plan-vs-spec]
   owner_required: false
   artifacts_produced: [assessment-report.md]
-  artifacts_required: [spec.md, plan.md, data-model.md, contracts/]
+  artifacts_required: [spec.md, plan.md]
 handoffs:
   - label: Create Tasks
     agent: cadre.tasks
@@ -138,4 +138,4 @@ Two gates, two scopes:
    - If READY_WITH_WARNINGS: List warnings, ask user to acknowledge before proceeding
    - If NOT_READY: List FAIL items, recommend fixes, block progression to tasks
 
-6. **Check for extension hooks**: After assessment, check `.cadre/extensions.yml` for `hooks.after_assess` entries and execute as per standard hook protocol.
+6. **Check for extension hooks**: After assessment, check `.cadre/extensions.yml` for `hooks.after_readiness` entries and execute as per standard hook protocol.

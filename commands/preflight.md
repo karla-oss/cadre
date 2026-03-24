@@ -1,7 +1,7 @@
 ---
 description: CADRE Preflight Gate — mandatory checkpoint after task decomposition and before implementation. Validates task coverage, ownership compliance, contract compliance, and implementation drift (tasks vs frozen contracts).
 cadre:
-  phase: P5b-preflight-gate
+  phase: P6b-preflight-gate
   invariants: [I-01, I-02, I-03, I-04, I-10]
   assessment_dimensions: [task-coverage, ownership-compliance, contract-compliance, drift-tasks-vs-contracts]
   owner_required: false
