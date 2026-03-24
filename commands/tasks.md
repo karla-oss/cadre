@@ -153,7 +153,7 @@ The tasks.md should be immediately executable - each task must be specific enoug
 Every task MUST strictly follow this format:
 
 ```text
-- [ ] [TaskID] [P?] [Story?] [@Owner] Description with file path
+- [ ] [TaskID] [P?] [Story?] [@owner] Description with file path
 ```
 
 **Format Components**:
@@ -167,7 +167,7 @@ Every task MUST strictly follow this format:
    - Foundational phase: NO story label  
    - User Story phases: MUST have story label
    - Polish phase: NO story label
-5. **[@Owner]**: REQUIRED (CADRE I-02). Module Agent or role responsible for this task
+5. **[@owner]**: REQUIRED (CADRE I-02). Module Agent or role responsible for this task
    - Format: [@agent-name] or [@role-name]
    - Every task MUST have an owner. ERROR if missing: "CADRE I-02 violation: task without owner"
    - Owner determines bounded execution scope (CADRE I-03): agent may only touch files within owned tasks
