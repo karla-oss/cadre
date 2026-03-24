@@ -6,9 +6,11 @@
 #
 # Purpose:
 #   Module Agent calls this when a task is complete.
-#   Creates a review-request artifact and signals Archi to review.
+#   Creates a review-request artifact with Status: draft.
+#   Agent must fill in self-check boxes, then run review-submit.sh.
 #
 # CADRE Invariants: I-01, I-02, I-03, I-06
+# OBS-008: Two-step review protocol (create → submit)
 #
 # Exit codes:
 #   0 — review request created successfully
@@ -45,7 +47,7 @@ fi
 # 3. Create review-request/ directory if not exists
 mkdir -p review-request
 
-# 4. Create review-request/${TASK_ID}.md
+# 4. Create review-request/${TASK_ID}.md with Status: draft
 OUTFILE="review-request/${TASK_ID}.md"
 CREATED_AT="$(date -u +"%Y-%m-%d %H:%M UTC")"
 AGENT="${USER:-module-agent}"
@@ -54,7 +56,7 @@ FILES_CHANGED="$(git diff HEAD --name-only 2>/dev/null || echo "[run: git diff H
 cat > "$OUTFILE" <<TEMPLATE
 # Review Request: ${TASK_ID}
 
-**Status**: ready-for-review
+**Status**: draft
 **Agent**: ${AGENT}
 **Created**: ${CREATED_AT}
 **Description**: ${DESCRIPTION}
@@ -87,18 +89,9 @@ ${FILES_CHANGED:-[no changes detected against HEAD]}
 **Reviewed**:
 TEMPLATE
 
-# 5. Enforce C3: self-check boxes must be checked
-RECORD_FILE="review-request/${TASK_ID}.md"
-if grep -qP "- \[ \]" "$RECORD_FILE" 2>/dev/null || grep -qF "- [ ]" "$RECORD_FILE" 2>/dev/null; then
-  echo -e "${RED}❌ C3 GATE BLOCKED: Self-check boxes are unchecked in review-request/${TASK_ID}.md${NC}"
-  echo -e "${RED}   Open the file and check all boxes before submitting for review.${NC}"
-  echo -e "${YELLOW}   Command: nano review-request/${TASK_ID}.md${NC}"
-  echo -e "${YELLOW}   Change '- [ ]' to '- [x]' for each completed item.${NC}"
-  exit 1
-fi
-
-# 6. Print confirmation
-echo -e "${GREEN}✅ Task ${TASK_ID} → Ready for Review${NC}"
-echo -e "   review-request/${TASK_ID}.md created"
-echo -e "   Archi: run 'bash scripts/bash/review-status.sh' to see queue"
+# 5. Print confirmation and next step instructions
+echo -e "${GREEN}✅ Draft created: review-request/${TASK_ID}.md${NC}"
+echo ""
+echo -e "📝 NEXT STEP: Fill in self-check boxes in review-request/${TASK_ID}.md"
+echo -e "   Then run: bash scripts/bash/review-submit.sh ${TASK_ID}"
 exit 0
