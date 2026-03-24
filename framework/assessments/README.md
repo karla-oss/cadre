@@ -151,3 +151,24 @@ In practice, **merge conflicts are a normal part of development** — not a bloc
 - Is purely technical implementation detail
 
 `pending` status = PASS (internal tracking, not user-visible behavior change).
+
+## OBS-007: task-commit.sh Must Scope to Module Boundary (2026-03-24)
+
+**Incident**: @frontend-agent bundled api/, ingestion/, and frontend/ changes into a single commit labeled T030. T039 (ingestion/parser.py) was never committed separately. Cross-boundary bundling violates NOTE-001 (task=commit) and CADRE I-03 (bounded execution).
+
+**Root cause**: `task-commit.sh` runs `git add -A` — stages ALL changes in working tree regardless of module boundary.
+
+**Fix needed in task-commit.sh**:
+- Add optional `--path <dir>` flag
+- If `--path` provided: `git add <dir>` instead of `git add -A`
+- Module agents must be instructed to pass their module path: `bash task-commit.sh T001 "desc" --path api/`
+- If cross-boundary files detected in staged area → WARN or BLOCK
+
+**Enforcement in implement.md**:
+After each task, agent runs:
+```bash
+bash scripts/bash/task-commit.sh T001 "description" --path <module_dir>
+```
+Where `<module_dir>` is declared in sprint-config.md module boundary.
+
+**Why it matters**: Commit bundling makes git history unreadable, breaks `validate-commits.sh` audit, and hides which task introduced which change.
