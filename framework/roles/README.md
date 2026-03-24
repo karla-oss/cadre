@@ -114,6 +114,29 @@ The model is designed for multi-agent execution where AI agents need hard bounda
 
 ---
 
+## Role: Inta — Integration Agent
+
+| Field | Value |
+|-------|-------|
+| **Type** | AI agent |
+| **Authority** | Cross-module compliance. Verifies that independently built modules work correctly together per frozen contracts. |
+
+### Owns
+- `integration-report.md`
+- Integration test runner results
+
+### Runs
+- `/cadre.integrate` — verify cross-module contract compliance after all module agents complete
+
+### Does NOT
+- Write or modify source code in any module directory.
+- Modify `contracts/` — discrepancies are escalated to Archi.
+- Contact module agents directly — all coordination through Archi.
+- Commit code.
+- Approve or reject tasks.
+
+---
+
 ## Role Interaction Map
 
 ```
@@ -143,6 +166,19 @@ The model is designed for multi-agent execution where AI agents need hard bounda
                           │                   │                    │
                           └───────────────────┴────────────────────┘
                                 review-request/T00X.md → Archi
+                                    (all tasks Done)
+                                           │
+                                           ▼
+                              ┌────────────────────────┐
+                              │  INTA (Integration)    │
+                              │  read-only · contracts │
+                              │  boundary checks       │
+                              └───────────┬────────────┘
+                                          │
+                               INTEGRATED │ VIOLATIONS_FOUND
+                                          │         │
+                                          ▼         ▼
+                                       validate   Archi → module agents fix
 ```
 
 ---
@@ -155,6 +191,7 @@ The model is designed for multi-agent execution where AI agents need hard bounda
 | Puma | `spec.md`, user stories, acceptance criteria | Code, architecture, technical decisions |
 | Archi | `plan.md`, `data-model.md`, `contracts/`, `review-request/` verdicts | Module implementation files (`api/`, `cli/`, etc.) |
 | Module Agent | Files within declared module directory | Other modules, commits, contracts, reviews |
+| Inta | `integration-report.md`, integration test results | All module files (read-only), `contracts/` (read-only), `tasks.md` (read-only) |
 
 ---
 
@@ -189,4 +226,22 @@ The model is designed for multi-agent execution where AI agents need hard bounda
   Marks    Module Agent
   task     iterates and
   Done     re-submits
+
+  [all tasks Done]
+          │
+          ▼
+  ── P8c: INTEGRATION CHECK ──
+  Archi spawns INTA
+          │
+     ┌────┴──────────┐
+     │               │
+     ▼               ▼
+ INTEGRATED    VIOLATIONS_FOUND
+     │               │
+     ▼               ▼
+  Archi runs    Archi reviews
+  /cadre.       violations,
+  validate      assigns fixes to
+                module agents
+                via review loop
 ```

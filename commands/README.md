@@ -24,7 +24,10 @@ P8  implement     → bounded execution (one agent, one owner, one phase)
 P8b review        → Archi reviews: contract/ownership/self-check/completeness
                     APPROVED → review-approve.sh → commit → Done
                     NEEDS_WORK → review-reject.sh → back to In Progress (loop)
-P9  validate      → [GATE C] Epic validation: all tasks Done, E2E, quickstart
+P8c integrate     → [GATE C] Inta verifies cross-module contract compliance
+                    INTEGRATED → proceed to validate
+                    VIOLATIONS_FOUND → Archi assigns fixes → module agents loop
+P9  validate      → [GATE D] Epic validation: all tasks Done, E2E, quickstart
                     EPIC_READY → Super sign-off → Epic close
 ```
 
@@ -34,7 +37,8 @@ P9  validate      → [GATE C] Epic validation: all tasks Done, E2E, quickstart
 |------|---------|------------|--------|-------------|
 | A | `cadre.readiness` | plan | tasks | plan vs spec (Drift ①) |
 | B | `cadre.preflight` | tasks | implement | tasks vs contracts (Drift ②) |
-| C | `cadre.validate` | all tasks Done | Epic close | end-to-end (Drift ③) |
+| C | `cadre.integrate` | all tasks Done | validate | cross-module contracts (Drift ③) |
+| D | `cadre.validate` | integration PASS | Epic close | end-to-end (Drift ④) |
 
 ## Commands
 
@@ -50,7 +54,8 @@ P9  validate      → [GATE C] Epic validation: all tasks Done, E2E, quickstart
 | `preflight.md` | P6b | Archi | Gate B — implementation readiness |
 | `implement.md` | P8 | Module Agent | Bounded execution per owner/phase |
 | `review.md` | P8b | Archi | Task review: approve or reject per task |
-| `validate.md` | P9 | Archi + Super | Gate C — Epic validation before close |
+| `integrate.md` | P8c | Inta | Gate C — cross-module contract compliance |
+| `validate.md` | P9 | Archi + Super | Gate D — Epic validation before close |
 | `checklist.md` | any | any | Checklist generation for any domain |
 
 ## Enforcement Scripts
@@ -73,5 +78,6 @@ P9  validate      → [GATE C] Epic validation: all tasks Done, E2E, quickstart
 | Puma | Human/AI | Spec ownership, acceptance criteria |
 | Archi | AI Agent | Plan, contracts, review, commits, validation |
 | Module Agent | AI Agent | Bounded implementation within owned module |
+| Inta | AI Agent | Cross-module contract compliance (read-only, post-implement) |
 
 See `framework/roles/README.md` for full role definitions.
