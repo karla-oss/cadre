@@ -104,7 +104,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 6. **Stop and report**: Command ends after planning. Report branch, IMPL_PLAN path, generated artifacts, and contract freeze status.
 
-5. **Check for extension hooks**: After reporting, check if `.specify/extensions.yml` exists in the project root.
+7. **Check for extension hooks**: After reporting, check if `.specify/extensions.yml` exists in the project root.
    - If it exists, read it and look for entries under the `hooks.after_plan` key
    - If the YAML cannot be parsed or is invalid, skip hook checking silently and continue normally
    - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
