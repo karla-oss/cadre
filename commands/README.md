@@ -69,6 +69,8 @@ P9  validate      → [GATE D] Epic validation: all tasks Done, E2E, quickstart
 | `scripts/bash/review-approve.sh` | Archi | Approve task, commit, mark Done |
 | `scripts/bash/review-reject.sh` | Archi | Reject task, write actionable comment, move back to In Progress |
 | `scripts/bash/review-status.sh` | Anyone | Show current review queue grouped by status |
+| `scripts/bash/review-submit.sh` | Module Agent | Step 2 of review: validate C3, set status ready-for-review |
+| `scripts/bash/spawn-agent.sh` | Orchestrator | Read ticket file → generate minimal agent prompt |
 
 ## Roles Quick Reference
 
