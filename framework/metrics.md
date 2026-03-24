@@ -97,3 +97,43 @@ Tracks quality and efficiency per sprint/phase. Used to measure improvement over
 | archi_iterations | 2-3 | 1 |
 | context_size_avg | 200-300 lines | <60 lines |
 | tokens_per_task_avg | 15-25k (batch) | 2-4k |
+
+---
+
+## Telemetry Roadmap
+
+### For Next Project: Collect Full Telemetry from Day 1
+
+**What to measure per agent run:**
+- `started_at`, `ended_at`, `duration_ms`
+- `tokens_in`, `tokens_out`, `tokens_cache`
+- `task_id`, `agent_type`, `phase`, `sprint`
+- `approach` — ticket | batch
+- `context_lines` — how many lines given to agent
+- `result` — approved | needs_work | rejected
+- `c1_deviations`, `c2_violations`, `c3_failures`
+- `archi_iterations` — how many review rounds
+
+**What to track over time:**
+- Drift rate per sprint (D4 findings over time → detects project decay)
+- Correctness rate per agent type (which agents drift most?)
+- Cost per task (tokens × price) → ROI metric
+- Time from task start to approved commit
+- Phase efficiency (which phases consume most tokens?)
+
+**How to implement:**
+- `spawn-agent.sh` logs start event to `telemetry/runs.jsonl`
+- `review-approve.sh` / `review-reject.sh` log outcome event
+- `metrics-log.sh` aggregates per batch
+- Weekly: `analytics.sh` reads runs.jsonl → generates report
+
+**Format: `telemetry/runs.jsonl`**
+```json
+{"ts":"2026-03-24T08:00:00Z","task":"T033","agent":"api-agent","phase":"P8","sprint":"S2","approach":"ticket","tokens_in":1200,"tokens_out":800,"duration_ms":45000,"result":"approved","c1":0,"c2":0,"c3":0,"archi_iter":1}
+```
+
+**Key insight to watch:**
+- If `c1_deviations` grows over sprints → agents drifting from contracts (architectural decay)
+- If `tokens_per_task` grows → context bloat, need trimming
+- If `archi_iterations` > 1 consistently → prompts need improvement
+- If `drift_rate` in readiness gate grows → spec/plan quality degrading
