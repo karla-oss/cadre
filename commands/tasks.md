@@ -101,7 +101,17 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Parallel execution examples per story
    - Implementation strategy section (MVP first, incremental delivery)
 
-6. **Report**: Output path to generated tasks.md and summary:
+6. **Generate ticket files**: After tasks.md is written, generate individual ticket files in `FEATURE_DIR/tickets/`:
+   - One file per task: `T001.md`, `T002.md`, etc.
+   - Use `templates/tickets/ticket-template.md` as base
+   - Fill all fields: TASK_ID, TITLE (from task description), OWNER (from `[@owner]` label), FILE (from task file path), EPIC (feature dir name), PHASE (phase number/name from tasks.md)
+   - Contract snippet: extract the relevant section from `contracts/` based on task description keywords (endpoint name, entity name, method). If no matching contract found, leave placeholder.
+   - Keep each ticket ≤60 lines total
+   - Write to `FEATURE_DIR/tickets/T001.md`, `FEATURE_DIR/tickets/T002.md`, etc.
+
+   > **Note**: Ticket files are the primary context source for agent spawn. tasks.md is for human overview only.
+
+7. **Report**: Output path to generated tasks.md and summary:
    - Total task count
    - Task count per user story
    - Parallel opportunities identified
