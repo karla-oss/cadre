@@ -2,7 +2,7 @@
 # =============================================================================
 # task-commit.sh — CADRE Task Commit Enforcer
 #
-# Usage: bash scripts/bash/task-commit.sh <TASK_ID> "<description>"
+# Usage: bash scripts/bash/task-commit.sh <TASK_ID> "<description>" [--path <dir>]
 #
 # Purpose:
 #   Enforce "task = commit" rule (CADRE NOTE-001).
@@ -12,7 +12,11 @@
 # Convention: "<TASK_ID>: <description>"
 # Example:    "T001: create api/ directory structure"
 #
+# Options:
+#   --path <dir>   Stage only files under <dir> instead of all changes (git add -A)
+#
 # CADRE Invariants: I-04 (Artifact-Driven), I-07 (Jira Surface)
+# OBS-007: --path flag for module boundary scoping
 #
 # Exit codes:
 #   0 — committed successfully
@@ -29,10 +33,22 @@ NC='\033[0m'
 
 TASK_ID="${1:-}"
 DESCRIPTION="${2:-}"
+STAGE_PATH=""
+
+# Parse optional --path flag
+if [[ "${3:-}" == "--path" ]]; then
+  if [[ -z "${4:-}" ]]; then
+    echo -e "${RED}❌ --path flag requires a directory argument${NC}"
+    echo -e "   Example: bash scripts/bash/task-commit.sh T001 \"description\" --path api/"
+    exit 1
+  fi
+  STAGE_PATH="${4}"
+fi
 
 if [[ -z "$TASK_ID" || -z "$DESCRIPTION" ]]; then
-  echo -e "${RED}❌ Usage: bash scripts/bash/task-commit.sh <TASK_ID> \"<description>\"${NC}"
+  echo -e "${RED}❌ Usage: bash scripts/bash/task-commit.sh <TASK_ID> \"<description>\" [--path <dir>]${NC}"
   echo -e "   Example: bash scripts/bash/task-commit.sh T001 \"create api/ directory structure\""
+  echo -e "   Example: bash scripts/bash/task-commit.sh T001 \"create api/ directory structure\" --path api/"
   exit 1
 fi
 
@@ -49,7 +65,22 @@ fi
 
 COMMIT_MSG="${TASK_ID}: ${DESCRIPTION}"
 
-git add -A
+if [[ -n "$STAGE_PATH" ]]; then
+  git add "$STAGE_PATH"
+  echo -e "${GREEN}📁 Staging path: ${STAGE_PATH}${NC}"
+
+  # Warn if there are cross-boundary files in the staged area
+  STAGED_OUTSIDE="$(git diff --cached --name-only | grep -v "^$(echo "$STAGE_PATH" | sed 's|/$||')" || true)"
+  if [[ -n "$STAGED_OUTSIDE" ]]; then
+    echo -e "${YELLOW}⚠️  WARN: Staged files outside --path boundary:${NC}"
+    echo "$STAGED_OUTSIDE" | while read -r f; do
+      echo -e "${YELLOW}   $f${NC}"
+    done
+  fi
+else
+  git add -A
+fi
+
 git commit -m "$COMMIT_MSG"
 
 echo -e "${GREEN}✅ Committed: $COMMIT_MSG${NC}"
