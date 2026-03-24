@@ -40,6 +40,18 @@
 [PRINCIPLE_5_DESCRIPTION]
 <!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
 
+### [PRINCIPLE_N]: Micro-Module Architecture
+Every implementation file has ONE responsibility and stays under 150 lines (tests excluded). One function group = one file. Files should be readable in a single agent context window.
+
+**Rules:**
+- Non-test files MUST NOT exceed 150 lines
+- Files > 200 lines trigger a refactor pass
+- Split by responsibility, not by size
+- Use shim pattern to preserve imports when splitting: original file re-exports from new modules
+- Refactor pass runs after each Epic (before next Epic starts)
+
+**Why:** In AI-native development, file size = agent context cost = iteration cost. A 150-line file costs ~3x fewer tokens than a 400-line file (measured, 2026-03-24).
+
 ## [SECTION_2_NAME]
 <!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
 

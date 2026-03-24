@@ -29,6 +29,7 @@ P8c integrate     → [GATE C] Inta verifies cross-module contract compliance
                     VIOLATIONS_FOUND → Archi assigns fixes → module agents loop
 P9  validate      → [GATE D] Epic validation: all tasks Done, E2E, quickstart
                     EPIC_READY → Super sign-off → Epic close
+P9b refactor      → file size audit → splits → before next Epic
 ```
 
 ## Gate Summary
@@ -39,6 +40,7 @@ P9  validate      → [GATE D] Epic validation: all tasks Done, E2E, quickstart
 | B | `cadre.preflight` | tasks | implement | tasks vs contracts (Drift ②) |
 | C | `cadre.integrate` | all tasks Done | validate | cross-module contracts (Drift ③) |
 | D | `cadre.validate` | integration PASS | Epic close | end-to-end (Drift ④) |
+| — | `cadre.refactor` | Epic close | next Epic specify | file size / micro-module compliance |
 
 ## Commands
 
@@ -56,6 +58,7 @@ P9  validate      → [GATE D] Epic validation: all tasks Done, E2E, quickstart
 | `review.md` | P8b | Archi | Task review: approve or reject per task |
 | `integrate.md` | P8c | Inta | Gate C — cross-module contract compliance |
 | `validate.md` | P9 | Archi + Super | Gate D — Epic validation before close |
+| `refactor.md` | P9b | Archi | Micro-module refactor pass — file size audit, splits, shim pattern |
 | `checklist.md` | any | any | Checklist generation for any domain |
 
 ## Enforcement Scripts

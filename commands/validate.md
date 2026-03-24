@@ -99,6 +99,19 @@ This is evidence collection that the system as a whole fulfils the Epic contract
    - Every task ID in tasks.md must have a corresponding commit
    - FAIL if any task is missing a commit (NOTE-001 violation)
 
+   ### V7: File Size Audit (Micro-Module Compliance)
+   Scan all non-test implementation files for size violations:
+   ```bash
+   find . -name "*.py" -o -name "*.ts" -o -name "*.tsx" | \
+     grep -v "test_\|.test.\|spec.\|node_modules\|__pycache__" | \
+     xargs wc -l 2>/dev/null | \
+     awk '$1 > 150 {print}' | sort -rn
+   ```
+   - WARN if any file is 150-300 lines (schedule refactor pass)
+   - FAIL if any file exceeds 300 lines (block Epic close, refactor required)
+   - Tests and shim files (< 20 lines) are excluded
+   Log finding in validate-report.md under V7.
+
 4. **Produce Validation Report**:
 
    Write `FEATURE_DIR/validate-report.md`:
@@ -121,6 +134,7 @@ This is evidence collection that the system as a whole fulfils the Epic contract
    | Drift (end-to-end) | PASS/WARN/FAIL | [count] |
    | Quickstart Validation | PASS/WARN/FAIL | [count] |
    | Commit Audit | PASS/WARN/FAIL | [count] |
+   | File Size Audit | PASS/WARN/FAIL | [count] |
 
    **Overall**: EPIC_READY / EPIC_READY_WITH_WARNINGS / EPIC_BLOCKED
 
