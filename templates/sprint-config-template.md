@@ -46,6 +46,22 @@
 
 ---
 
+### @infra-agent (optional — include when infra work is in scope)
+
+**Module boundary**: repo root + `*/Dockerfile` + `.github/` + `terraform/` + `deploy/`
+
+**Expertise declaration**:
+- **Containerization**: Docker [version], Docker Compose [version]
+- **CI/CD**: [GitHub Actions / GitLab CI / other]
+- **Cloud target**: [AWS / GCP / Railway / Fly.io / VPS]
+- **IaC**: [Terraform / Pulumi / none]
+- **DB migrations**: [Alembic / Flyway / none]
+
+**Services to configure**: [list from sprint-config — name, port, env vars]
+**Does NOT touch**: any module source code directories
+
+---
+
 ## Inta Expertise Context
 
 <!-- Inta reads this to know what tech stack to expect when running integration checks -->

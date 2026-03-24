@@ -114,6 +114,33 @@ The model is designed for multi-agent execution where AI agents need hard bounda
 
 ---
 
+## Role: Infra — Infrastructure Agent
+
+| Field | Value |
+|-------|-------|
+| **Type** | AI agent |
+| **Authority** | Infrastructure and deployment. Owns everything outside module code boundaries. |
+
+### Owns
+- `docker-compose*.yml`, `*/Dockerfile`, `.github/workflows/`, `terraform/`, `deploy/`, `Makefile`, `.env.example`
+
+### Expertise (static)
+Docker, Docker Compose, CI/CD (GitHub Actions), Terraform, cloud platforms (AWS/GCP/Railway), secrets management, reverse proxy, DB migrations.
+
+### Intervenes When
+- Sprint setup requires docker-compose / Dockerfiles
+- CI/CD pipeline creation or update
+- Production deployment / Terraform provisioning
+
+### Does NOT
+- Touch any module source code (`api/`, `frontend/`, etc.)
+- Make architectural decisions about which services exist (that's Archi)
+- Handle application-level config inside modules
+
+See `infra.md` for full reference card.
+
+---
+
 ## Role: Inta — Integration Agent
 
 | Field | Value |
