@@ -52,7 +52,7 @@ if [[ "$CURRENT_STATUS" == "ready-for-review" ]]; then
 fi
 
 # 4. C3 Gate: ALL self-check boxes must be [x]
-if grep -qF "- [ ]" "$RECORD_FILE" 2>/dev/null; then
+if grep -qF -- "- [ ]" "$RECORD_FILE" 2>/dev/null; then
   echo -e "${RED}❌ C3 GATE BLOCKED: Fill in self-check boxes first${NC}"
   echo -e "${RED}   Open: ${RECORD_FILE}${NC}"
   echo -e "${YELLOW}   Change '- [ ]' to '- [x]' for each completed item.${NC}"
