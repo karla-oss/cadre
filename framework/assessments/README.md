@@ -54,3 +54,32 @@ Gate run → WARN/FAIL findings → assign to responsible agent → fix → re-r
 - File boundary list must be explicit per instance (not whole module) to prevent overlap
 
 **Risk**: if two parallel instances touch the same file → merge conflict. Mitigation: orchestrator must statically verify file disjointness before spawning. If overlap detected → serialize (no parallel spawn).
+
+## OBS-003: Infra Files Need Explicit Ownership (2026-03-24)
+
+**Observation**: Infrastructure files (docker-compose.yml, Makefile, .env.example, .github/, nginx.conf) live in repo root — outside all module boundaries (api/, cli/, frontend/, etc.). Current ownership model has no home for them.
+
+**Problem**: 
+- preflight D2 (Ownership Compliance) flags them as boundary violations
+- Any module agent that touches them technically violates I-03
+- docker-compose.yml is often owned by whoever started the project → implicit, not declared
+
+**Solution: Add `@infra-agent` role (or "shared root" zone) to sprint-config.md**
+
+```markdown
+### @infra-agent (or: Shared Root)
+**Module boundary**: repo root files ONLY
+  - docker-compose.yml
+  - Makefile
+  - .env.example
+  - .dockerignore, .gitignore
+  - README.md (project-level)
+**Does NOT touch**: any module subdirectory
+```
+
+**Alternative**: designate Archi as infra owner for small projects. Archi already owns plan.md (repo root). Consistent with technical authority role.
+
+**Implementation needed**:
+- sprint-config-template.md: add optional `@infra-agent` section with explicit root file list
+- tasks.md rules: `[@infra-agent]` or `[@archi]` for root-level tasks
+- preflight D2 check: exclude known infra files from boundary violation warnings IF declared in sprint-config
