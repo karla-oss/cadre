@@ -94,6 +94,9 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Filter tasks.md to show ONLY tasks owned by this agent (matching `[@owner]` tag)
    - If agent has no owned tasks: ERROR "CADRE I-02: No tasks assigned to this agent. Check task ownership."
    - Display owned task count and scope boundaries (files/modules this agent may touch)
+   - Declare explicit file boundary: list ALL files this agent is allowed to touch based on owned tasks
+   - Any write operation outside this list = ESCALATION (do NOT proceed silently)
+   - Output: "Agent [@owner] file boundary: [list of files]"
    - **BOUNDARY RULE**: Agent MUST NOT modify files outside owned task scope
    - If a task requires changes to files owned by another agent: STOP and create escalation:
      ```
@@ -163,6 +166,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Phase-by-phase execution**: Complete each phase before moving to the next
    - **Respect dependencies**: Run sequential tasks in order, parallel tasks [P] can run together  
    - **Follow TDD approach**: Execute test tasks before their corresponding implementation tasks
+   - **Phase 2 Hard Stop**: If executing Phase 2 (contract tests), STOP after writing tests. DO NOT write any implementation code. Output: "Phase 2 complete — tests written. Orchestrator must run `assert-red.sh` before Phase 3 agents are spawned." Exit cleanly.
    - **File-based coordination**: Tasks affecting the same files must run sequentially
    - **Validation checkpoints**: Verify each phase completion before proceeding
 
@@ -179,7 +183,12 @@ You **MUST** consider the user input before proceeding (if not empty).
    - For parallel tasks [P], continue with successful tasks, report failed ones
    - Provide clear error messages with context for debugging
    - Suggest next steps if implementation cannot proceed
-   - **IMPORTANT** For completed tasks, make sure to mark the task off as [X] in the tasks file.
+   **IMPORTANT — Task Completion Protocol (NOTE-001)**: After completing each task:
+   1. Mark task as [X] in tasks.md
+   2. Run immediately: `bash scripts/bash/task-commit.sh T00X "short description"`
+   3. Verify commit succeeds before proceeding to the next task
+
+   DO NOT batch commits. DO NOT proceed to the next task until git commit succeeds. Violation = NOTE-001 class incident.
 
 10. **CADRE Drift Check** (I-01, I-10) — run after every phase checkpoint:
    - Compare implemented code against frozen contracts (data-model.md, contracts/)
@@ -198,6 +207,8 @@ You **MUST** consider the user input before proceeding (if not empty).
      - **Deliverable**: code/test that matches contract and passes validation
      - **Reasoned Rejection**: documented explanation why task cannot/should not be done now
    - Tasks CANNOT simply stall. If blocked, produce Reasoned Rejection with escalation.
+
+   Note: This is Drift ② (task-level drift). Drift ① (architectural drift) was already checked by `cadre.readiness`. If drift is detected here that should have been caught at preflight, log as `cadre.preflight` gate failure.
 
 11. Completion validation:
    - Verify all owned tasks are completed (deliverable or reasoned rejection)
