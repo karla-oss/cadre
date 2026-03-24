@@ -67,6 +67,16 @@ When tasks exist in "Ready for Review" status. Run `review-status.sh` first to s
 5. **After all queue items processed**:
    Run `review-status.sh` again to confirm queue state.
 
+## Post-Review Metrics
+
+After completing a review batch, log metrics:
+
+```bash
+bash scripts/bash/metrics-log.sh "<sprint>" "<phase>" "<approach>" <total> <needs_work_pct> <c1_deviations> <iterations> "<notes>"
+```
+
+This creates a data trail for measuring framework improvement over time.
+
 ## Rules
 
 - Review ONE task at a time — do not batch approvals
