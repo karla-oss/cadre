@@ -68,3 +68,20 @@ When porting a spec-kit mechanism to CADRE:
 3. **Add CADRE invariant references** — each command step should cite which invariant it enforces
 4. **Add assessment hooks** — before/after each phase, mandatory for CADRE compliance
 5. **Keep templates constraint-driven** — templates restrict output, not suggest it
+
+---
+
+## Insight: clarify = Assessment Layer foundation
+
+**Discovered during T2 test (2026-03-24):**
+
+`clarify` is the natural place to expand CADRE Assessment capabilities. Currently covers completeness + contradiction only. Should be extended to become the full Assessment Layer covering all 4 dimensions:
+
+1. **Completeness** ✅ (already in clarify)
+2. **Contradiction** ✅ (already in clarify)
+3. **Readiness** ❌ (needs to be added — owner assigned? deps available? env ready?)
+4. **Drift** ❌ (needs to be added — scope matches original? contracts intact?)
+
+The current `assess.md` command is a separate gate. Future consideration: merge assess into an expanded clarify that runs at multiple points (post-spec, post-plan, during execution) rather than only as a one-shot gate.
+
+This means `clarify` evolves from "ask 5 questions about ambiguity" into "structured assessment that can run against any artifact set at any phase."
