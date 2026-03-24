@@ -89,7 +89,7 @@ TEMPLATE
 
 # 5. Enforce C3: self-check boxes must be checked
 RECORD_FILE="review-request/${TASK_ID}.md"
-if grep -q "- \[ \]" "$RECORD_FILE" 2>/dev/null; then
+if grep -qP "- \[ \]" "$RECORD_FILE" 2>/dev/null || grep -qF "- [ ]" "$RECORD_FILE" 2>/dev/null; then
   echo -e "${RED}❌ C3 GATE BLOCKED: Self-check boxes are unchecked in review-request/${TASK_ID}.md${NC}"
   echo -e "${RED}   Open the file and check all boxes before submitting for review.${NC}"
   echo -e "${YELLOW}   Command: nano review-request/${TASK_ID}.md${NC}"
