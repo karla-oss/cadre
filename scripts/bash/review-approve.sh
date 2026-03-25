@@ -61,7 +61,13 @@ sed -i "s/^\*\*Reviewed\*\*:.*/**Reviewed**: ${REVIEWED_AT}/" "$REQFILE"
 # 5. Commit via task-commit.sh
 bash "$(dirname "$0")/task-commit.sh" "${TASK_ID}" "${DESCRIPTION}"
 
-# 6. Print confirmation
+# 6. Check if this was the last task — remind about integrate
+REMAINING=$(grep -c "^\[ \]" review-request/*.md 2>/dev/null || echo "0")
+if [[ "$REMAINING" == "0" ]]; then
+  echo -e "${YELLOW}⚠️  Last task approved. Run /cadre.integrate before /cadre.validate.${NC}"
+fi
+
+# 7. Print confirmation
 echo -e "${GREEN}✅ APPROVED: ${TASK_ID}${NC}"
 echo -e "   Committed. Task → Done."
 exit 0

@@ -1,77 +1,84 @@
 #!/usr/bin/env bash
 # =============================================================================
-# spawn-agent.sh — CADRE Minimal Agent Prompt Generator
+# spawn-agent.sh — CADRE Agent Spawner
 #
-# Usage: bash scripts/bash/spawn-agent.sh <TICKET_FILE>
+# Usage:
+#   bash scripts/bash/spawn-agent.sh --task <ticket-file>        # Tasked mode
+#   bash scripts/bash/spawn-agent.sh --no-task --agent <type>   # Un-tasked mode
 #
-# Purpose:
-#   Read a ticket file and output a minimal agent prompt to stdout.
-#   Orchestrator uses this output as the task for sessions_spawn.
-#
-# OBS-010: Ticket-per-agent context model
+# Examples:
+#   bash scripts/bash/spawn-agent.sh --task specs/001/tickets/T001.md
+#   bash scripts/bash/spawn-agent.sh --no-task --agent api
 #
 # Exit codes:
-#   0 — prompt output successfully
-#   1 — invalid args or ticket file not found
+#   0 — spawned or no tasks (un-tasked)
+#   1 — invalid args or error
 # =============================================================================
 
 set -euo pipefail
 
 RED='\033[0;31m'
+GREEN='\033[0;32m'
 NC='\033[0m'
 
-TICKET_FILE="${1:-}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CADRE_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
+
+# --- Parse args ---
+MODE=""
+TICKET_FILE=""
+AGENT_TYPE=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --task)
+      MODE="tasked"
+      TICKET_FILE="$2"
+      shift 2
+      ;;
+    --no-task)
+      MODE="untasked"
+      shift
+      ;;
+    --agent)
+      AGENT_TYPE="$2"
+      shift 2
+      ;;
+    *)
+      echo -e "${RED}Unknown arg: $1${NC}" >&2
+      exit 1
+      ;;
+  esac
+done
 
 # --- Validate ---
-if [[ -z "$TICKET_FILE" ]]; then
-  echo -e "${RED}❌ Usage: bash scripts/bash/spawn-agent.sh <TICKET_FILE>${NC}" >&2
-  echo -e "   Example: bash scripts/bash/spawn-agent.sh specs/001-input-ingestion/tickets/T001.md" >&2
+if [[ -z "$MODE" ]]; then
+  echo -e "${RED}Usage: spawn-agent.sh --task <file> OR --no-task --agent <type>${NC}" >&2
   exit 1
 fi
 
-if [[ ! -f "$TICKET_FILE" ]]; then
-  echo -e "${RED}❌ Ticket file not found: $TICKET_FILE${NC}" >&2
-  exit 1
-fi
+# --- TASKED MODE ---
+if [[ "$MODE" == "tasked" ]]; then
+  if [[ -z "$TICKET_FILE" ]]; then
+    echo -e "${RED}--task requires ticket file${NC}" >&2
+    exit 1
+  fi
 
-# --- Extract fields ---
-TICKET_CONTENT="$(cat "$TICKET_FILE")"
+  if [[ ! -f "$TICKET_FILE" ]]; then
+    echo -e "${RED}Ticket not found: $TICKET_FILE${NC}" >&2
+    exit 1
+  fi
 
-# TASK_ID from header: "# T001: Some Title"
-TASK_ID="$(echo "$TICKET_CONTENT" | grep -m1 '^# T' | sed 's/^# \(T[0-9]*\):.*/\1/')"
+  TASK_CONTENT="$(cat "$TICKET_FILE")"
+  TASK_ID="$(echo "$TASK_CONTENT" | grep -m1 '^# ' | sed -E 's/^#[[:space:]]+([A-Z]+-[0-9]+):.*/\1/' || echo "UNKNOWN")"
+  OWNER="$(echo "$TASK_CONTENT" | grep -m1 '^\*\*Owner\*\*:' | sed 's/\*\*Owner\*\*: @\(.*\)/\1/' | tr -d '[:space:]' || echo "unknown")"
+  FILE="$(echo "$TASK_CONTENT" | grep -m1 '^\*\*File\*\*:' | sed 's/\*\*File\*\*: //' | tr -d '[:space:]' || echo "N/A")"
+  EPIC="$(echo "$TASK_CONTENT" | grep -m1 '^\*\*Epic\*\*:' | sed 's/\*\*Epic\*\*: //' | tr -d '[:space:]' || echo "N/A")"
 
-# OWNER from "**Owner**: @api-agent"
-OWNER="$(echo "$TICKET_CONTENT" | grep -m1 '^\*\*Owner\*\*:' | sed 's/\*\*Owner\*\*: @\(.*\)/\1/' | tr -d '[:space:]')"
+  TICKET_ABS="$(realpath "$TICKET_FILE")"
 
-# FILE from "**File**: api/routers/projects.py"
-FILE="$(echo "$TICKET_CONTENT" | grep -m1 '^\*\*File\*\*:' | sed 's/\*\*File\*\*: //' | tr -d '[:space:]')"
-
-# EPIC from "**Epic**: 001-input-ingestion"
-EPIC="$(echo "$TICKET_CONTENT" | grep -m1 '^\*\*Epic\*\*:' | sed 's/\*\*Epic\*\*: //' | tr -d '[:space:]')"
-
-# --- Validate extracted fields ---
-if [[ -z "$TASK_ID" ]]; then
-  echo -e "${RED}❌ Could not extract TASK_ID from ticket header (expected: # T001: Title)${NC}" >&2
-  exit 1
-fi
-if [[ -z "$OWNER" ]]; then
-  echo -e "${RED}❌ Could not extract OWNER from ticket (expected: **Owner**: @agent-name)${NC}" >&2
-  exit 1
-fi
-if [[ -z "$FILE" ]]; then
-  echo -e "${RED}❌ Could not extract FILE from ticket (expected: **File**: path/to/file.py)${NC}" >&2
-  exit 1
-fi
-if [[ -z "$EPIC" ]]; then
-  echo -e "${RED}❌ Could not extract EPIC from ticket (expected: **Epic**: epic-branch)${NC}" >&2
-  exit 1
-fi
-
-# Resolve absolute path to ticket file
-TICKET_ABS="$(realpath "$TICKET_FILE")"
-
-# --- Output minimal agent prompt ---
-cat <<PROMPT
+  # Generate prompt
+  cat <<PROMPT
 You are @${OWNER} for SpecForge.
 
 ## Your task: ${TASK_ID}
@@ -83,6 +90,10 @@ The ticket contains everything you need:
 - Relevant contract snippet
 - Acceptance criteria
 
+## Do NOT read these files:
+- quickstart.md
+- sprint-config.md
+
 ## Your boundary
 
 ONLY touch: ${FILE}
@@ -91,8 +102,114 @@ ONLY touch: ${FILE}
 
 1. Mark [X] in specs/${EPIC}/tasks.md for ${TASK_ID}
 2. Run: bash /workspace/projects/cadre/scripts/bash/review-request.sh ${TASK_ID} "brief description"
-3. Fill self-check boxes in review-request/${TASK_ID}.md
+3. Fill self-check in review-request/${TASK_ID}.md
 4. Run: bash /workspace/projects/cadre/scripts/bash/review-submit.sh ${TASK_ID}
 PROMPT
 
-exit 0
+  exit 0
+fi
+
+# --- UNTASKED MODE ---
+if [[ "$MODE" == "untasked" ]]; then
+  if [[ -z "$AGENT_TYPE" ]]; then
+    echo -e "${RED}--agent <type> is required for --no-task${NC}" >&2
+    exit 1
+  fi
+
+  TASKS_DIR="$CADRE_ROOT/tasks"
+  if [[ ! -d "$TASKS_DIR" ]]; then
+    echo -e "${RED}No tasks directory: $TASKS_DIR${NC}" >&2
+    exit 1
+  fi
+
+  TASK_SCRIPTS="$SCRIPT_DIR"
+
+  # Normalize agent name
+  NORMALIZED_AGENT="$AGENT_TYPE"
+  case "$AGENT_TYPE" in
+    api) NORMALIZED_AGENT="api-agent" ;;
+    frontend) NORMALIZED_AGENT="frontend-agent" ;;
+    infra) NORMALIZED_AGENT="infra-agent" ;;
+    analysis) NORMALIZED_AGENT="analysis-agent" ;;
+    archi) NORMALIZED_AGENT="archi-agent" ;;
+    inta) NORMALIZED_AGENT="inta-agent" ;;
+    # Puma is just @puma, not @puma-agent
+    puma) NORMALIZED_AGENT="puma" ;;
+  esac
+
+  # Get project context for Puma
+  # Default: PROJECT_DIR env or assume ../ from CADRE root
+  PROJECT_CONTEXT=""
+  if [[ "$AGENT_TYPE" == "puma" ]]; then
+    PROJECT_DIR="${PROJECT_DIR:-$(dirname "$CADRE_ROOT")}"
+    PROJECT_CONTEXT_FILE="$PROJECT_DIR/puma-context.md"
+    if [[ -f "$PROJECT_CONTEXT_FILE" ]]; then
+      PROJECT_CONTEXT=$(cat <<EOF
+
+## Project Context
+
+Read this file for project context: $PROJECT_CONTEXT_FILE
+
+EOF
+)
+    fi
+  fi
+
+  # Generate standing agent prompt
+  cat <<PROMPT
+You are a standing agent @${NORMALIZED_AGENT} for SpecForge.${PROJECT_CONTEXT}
+
+## Your role
+You execute tasks from the task system. Your job:
+1. Find your tasks
+2. Execute them
+3. Report completion
+4. Repeat or sleep
+
+## Task System Scripts
+- Get your TODO tasks:
+  bash ${TASK_SCRIPTS}/task-get-todos.sh ${AGENT_TYPE}
+
+- Claim a task (mark IN_PROGRESS):
+  bash ${TASK_SCRIPTS}/task-claim.sh <task-file>
+
+- Mark task done:
+  bash ${TASK_SCRIPTS}/task-complete.sh <task-file>
+
+- Block task (if can't execute):
+  bash ${TASK_SCRIPTS}/task-block.sh <task-file> "<reason>"
+
+## Your Workflow
+
+Loop:
+  1. Get TODO tasks: bash task-get-todos.sh ${AGENT_TYPE}
+  2. If empty → terminate (sleep)
+  3. Pick first task from list
+  4. READ the task file (understand what needs to be done)
+  5. Claim it: bash task-claim.sh <task-file>
+     - If claim fails (already taken) → pick next task
+  6. Execute the work (based on what you read)
+  7. Mark ready for review: bash task-complete.sh <task-file>
+  8. Go back to step 1
+
+## Important
+- For @puma: Use @puma as owner tag in task files (not @puma-agent)
+- All other agents use @xxx-agent format
+
+## Constraints
+- Only touch files related to your task
+- If task can't be executed (missing prerequisites) → block it with reason
+- Complete task fully before moving to next
+- Be thorough — one good task > three half-done
+
+## After all tasks done
+When no more TODO tasks → terminate (sleep).
+You will be re-triggered when new tasks appear.
+
+Start now:
+1. Get your TODO tasks
+2. Pick and execute first task
+PROMPT
+
+  exit 0
+fi

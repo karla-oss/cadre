@@ -35,22 +35,52 @@ The model is designed for multi-agent execution where AI agents need hard bounda
 
 | Field | Value |
 |-------|-------|
-| **Type** | Human or AI agent |
-| **Authority** | Spec ownership. Acceptance criteria. User story sign-off. |
+| **Type** | AI agent (autonomous) |
+| **Authority** | Spec ownership. Product decisions. Task creation. All non-technical documentation. |
 
 ### Owns
 - `spec.md`
 - User stories
 - Acceptance criteria
+- Task creation in task system
+- All non-technical documentation
 
 ### Runs
 - `/cadre.specify` — author or update the spec
 - `/cadre.clarify` — respond to clarification requests from Archi or Module Agents
+- Can spawn autonomously without task (un-tasked mode)
+
+### Spawn
+- Triggered: P3 → P4 transition (planning starts)
+- Or: Manual trigger by Super
+- Mode: Un-tasked or tasked depending on work type
 
 ### Does NOT
 - Make technical decisions.
 - Touch code.
 - Define architecture.
+
+### Expertise
+
+**Static (always):**
+- Product management methodology
+- CADRE methodology (roles, phases, workflow)
+- User story writing
+- Acceptance criteria formulation
+
+**Dynamic (per project, initialized once at project start):**
+- Domain knowledge
+- Project context
+- Target users / market
+
+### Initialization
+
+Puma is initialized once per project:
+1. Reads `spec.md` for project context
+2. Creates project context file: `puma-context.md`
+3. All subsequent runs use `puma-context.md` (no re-reading of spec.md)
+
+**Context update:** When spec.md changes significantly, Puma updates `puma-context.md` manually or via explicit re-init. (TBD: mechanism for context staleness detection)
 
 ---
 
@@ -179,8 +209,8 @@ See `infra.md` for full reference card.
           ▼                                         ▼
 ┌─────────────────┐                     ┌─────────────────────┐
 │  PUMA (PM)      │  ──spec.md──▶       │  ARCHI (Architect)  │
-│  spec · stories │  ◀──clarify──       │  plan · contracts   │
-│  acceptance     │                     │  review · commit    │
+│  AI agent       │  ◀──clarify──       │  plan · contracts   │
+│  spec · tasks   │                     │  review · commit    │
 └─────────────────┘                     └──────────┬──────────┘
                                                    │
                               ┌────────────────────┼──────────────────┐
@@ -215,7 +245,7 @@ See `infra.md` for full reference card.
 | Role | Owns | Does NOT Touch |
 |------|------|----------------|
 | Super | `constitution.md`, governance layer | Code, task-level decisions, spec |
-| Puma | `spec.md`, user stories, acceptance criteria | Code, architecture, technical decisions |
+| Puma | `spec.md`, user stories, acceptance criteria, task creation | Code, architecture, technical decisions |
 | Archi | `plan.md`, `data-model.md`, `contracts/`, `review-request/` verdicts | Module implementation files (`api/`, `cli/`, etc.) |
 | Module Agent | Files within declared module directory | Other modules, commits, contracts, reviews |
 | Inta | `integration-report.md`, integration test results | All module files (read-only), `contracts/` (read-only), `tasks.md` (read-only) |

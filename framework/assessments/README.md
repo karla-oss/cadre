@@ -388,3 +388,81 @@ Cluster B: api/routers/analysis_router/
 - 80-line micro-module → clear spec (one function = one contract = one AC)
 
 **Torres: private finding — not to be disclosed publicly yet.**
+
+### OBS-004: review-approve — Self-Check Enforcement (2026-03-24)
+**Fix**: Added check in review-approve.sh — if self-check boxes are unchecked (`- [ ]`), reject approval. Archi cannot bypass module agent's self-check.
+**Status**: ENFORCED
+
+### OBS-007: task-commit.sh --path — Verified Working (2026-03-24)
+**Verification**: Tested --path flag, works correctly. Stages only files under specified directory.
+**Status**: VERIFIED
+
+### OBS-020: Invariants Reference Card Created (2026-03-24)
+**Created**: `framework/invariants/README.md` — minimal reference card with Core (I-01 to I-06), Phase-Gated (I-07, I-08), and Principles (I-10 to I-12)
+**Status**: ENFORCED
+
+### OBS-021: Inta Gate Skipped — No Automatic Trigger (2026-03-24)
+**Symptom**: S3 completed all tasks but `cadre.integrate` was never run. No `integration-report.md`.
+**This is AN ANOMALY — Cadre workflow broken**
+**Root cause**: After last `review-approve.sh`, Arhci should spawn Inta. No automatic reminder existed.
+**Fix**: Added reminder in `review-approve.sh` — after committing last task, prints warning "Run /cadre.integrate before /cadre.validate"
+**Status**: ENFORCED
+
+### OBS-022: Agent Context Telemetry (2026-03-24)
+**Goal**: Understand agent context composition — working code vs artifacts vs specs
+**New telemetry fields** (in telemetry/runs.jsonl):
+- `context_files_read`: count of files agent read
+- `context_lines_total`: total lines in context
+- `context_breakdown`: {working_code_lines, artifact_lines, spec_lines, contract_lines, other_lines}
+- `context_files_list`: array of file paths read
+**Implementation**: Add context capture to spawn-agent.sh before agent runs
+**Status**: TO BE IMPLEMENTED
+
+### OBS-022: Agent Context Telemetry (2026-03-24)
+**Goal**: Understand agent context composition
+**Script**: `scripts/bash/context-stats.sh` — captures context breakdown before spawn
+
+**Findings from S3 sample:**
+- Ticket: ~50 lines (varies by task)
+- Contract snippet: 5-20 lines
+- Config+Model+Quickstart: ~430 lines (SAME for all tasks — pure overhead)
+- **Total artifact context: ~485-500 lines per task**
+- Plus: agent reads working code files (~100-400 lines)
+- **Total context per task: ~600-900 lines**
+
+**Key insight**: 430 lines of boilerplate is repeated in every task. Could be reduced by:
+1. Reference-based includes (not full copy)
+2. Smaller sprint-config (extract only relevant module section)
+3. Skip quickstart in ticket context (agent can read if needed)
+
+**Status**: IMPLEMENTED — context-stats.sh working
+
+### OBS-023: Context Reduction — Config+Model+Quickstart (2026-03-24)
+**Finding**: ~430 lines of boilerplate (sprint-config + data-model + quickstart) injected into EVERY agent task context. Same for all tickets.
+**Problem**: Pure overhead, increases token burn, agent may not need all of it
+**Goal**: Reduce without breaking agent constraints
+**Ideas**:
+1. Reference-based includes (not full copy)
+2. Sprint-config: extract only relevant module section per ticket
+3. Quickstart: skip in ticket context (agent can read if needed)
+4. Ticket contains only what's relevant (contract snippet + boundary)
+**Status**: Needs evaluation
+
+### OBS-023 (UPDATED): Context Reduction — Quickstart Removed (2026-03-24)
+**Fix**: Added explicit rule to spawn-agent.sh — "Do NOT read quickstart.md (for validation, not implementation)"
+**Also removed**: sprint-config from agent prompt (redundant — ticket specifies module)
+**Effective**: ~136 lines removed per task context
+**Status**: ENFORCED
+
+### OBS-023 (FINAL): Context Reduction — Module Expertise Only (2026-03-24)
+**What was done**:
+1. Quickstart removed from agent context (not necessary for implementation)
+2. spawn-agent.sh now extracts only the relevant @module section from sprint-config
+3. Agent normalization: @api → @api-agent, @frontend → @frontend-agent, @infra → @infra-agent
+
+**Results**:
+- Before: ~489 lines per task context
+- After: ~77 lines per task context
+- Savings: ~412 lines (~84% reduction)
+
+**Status**: ENFORCED
