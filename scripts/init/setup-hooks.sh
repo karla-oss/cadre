@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
 # =============================================================================
-# setup-hooks.sh — Install CADRE Git Hooks
+# setup-hooks.sh — Install CADRE Git Hooks (WORKFLOW TRIGGERS)
 #
 # Usage:
-#   bash scripts/bash/setup-hooks.sh
+#   bash scripts/init/setup-hooks.sh
 #
-# Installs CADRE hooks into .git/hooks/
-# Preserves existing hooks (sources them first, then extends)
+# Installs CADRE hooks that TRIGGER workflows, not just log.
 # =============================================================================
 
 set -euo pipefail
@@ -21,7 +20,7 @@ if [[ -z "$GIT_HOOKS_DIR" ]] || [[ "$GIT_HOOKS_DIR" == "/hooks" ]]; then
     exit 1
 fi
 
-echo "=== CADRE Git Hooks Setup ==="
+echo "=== CADRE Git Hooks Setup (Workflow Triggers) ==="
 echo "Hooks directory: $GIT_HOOKS_DIR"
 echo ""
 
@@ -37,11 +36,9 @@ BACKUP_FILE="$HOOK_FILE.cadre.bak"
 echo "Installing $HOOK_NAME hook..."
 
 if [[ -f "$HOOK_FILE" ]]; then
-    echo "  Existing hook found. Backing up."
     cp "$HOOK_FILE" "$BACKUP_FILE"
     {
         echo "#!/usr/bin/env bash"
-        echo "# CADRE $HOOK_NAME hook - extended"
         echo 'if [[ -f "'"$BACKUP_FILE"'" ]]; then source "'"$BACKUP_FILE"'"; fi'
         echo ""
         cat <<'INNER'
@@ -85,10 +82,62 @@ echo "[CADRE] Pre-push checks passed."
 INNER
 fi
 chmod +x "$HOOK_FILE"
-echo "  → pre-push installed"
+echo "  → pre-push installed (blocks if tests fail)"
 
 # -----------------------------------
-# post-push
+# post-checkout - WORKFLOW TRIGGER
+# -----------------------------------
+HOOK_NAME="post-checkout"
+HOOK_FILE="$GIT_HOOKS_DIR/$HOOK_NAME"
+BACKUP_FILE="$HOOK_FILE.cadre.bak"
+
+echo "Installing $HOOK_NAME hook (WORKFLOW TRIGGER)..."
+
+if [[ -f "$HOOK_FILE" ]]; then
+    cp "$HOOK_FILE" "$BACKUP_FILE"
+    {
+        echo "#!/usr/bin/env bash"
+        echo 'if [[ -f "'"$BACKUP_FILE"'" ]]; then source "'"$BACKUP_FILE"'"; fi'
+        echo ""
+        cat <<'INNER'
+PREV_BRANCH=$1
+NEW_BRANCH=$2
+
+if [[ "$NEW_BRANCH" == micro/* ]]; then
+    echo "[CADRE] Switched to microbranch: $NEW_BRANCH"
+fi
+
+if [[ "$NEW_BRANCH" == sprint/* ]]; then
+    echo "[CADRE] Sprint branch detected: $NEW_BRANCH"
+    echo "[CADRE] Starting implementation..."
+    EPIC=$(echo "$NEW_BRANCH" | sed 's/sprint\///')
+    bash scripts/implement/implement.sh "specs/$EPIC"
+fi
+INNER
+    } > "$HOOK_FILE"
+else
+    cat > "$HOOK_FILE" <<'INNER'
+#!/usr/bin/env bash
+PREV_BRANCH=$1
+NEW_BRANCH=$2
+
+if [[ "$NEW_BRANCH" == micro/* ]]; then
+    echo "[CADRE] Switched to microbranch: $NEW_BRANCH"
+fi
+
+if [[ "$NEW_BRANCH" == sprint/* ]]; then
+    echo "[CADRE] Sprint branch detected: $NEW_BRANCH"
+    echo "[CADRE] Starting implementation..."
+    EPIC=$(echo "$NEW_BRANCH" | sed 's/sprint\///')
+    bash scripts/implement/implement.sh "specs/$EPIC"
+fi
+INNER
+fi
+chmod +x "$HOOK_FILE"
+echo "  → post-checkout installed (TRIGGERS implement on sprint/*)"
+
+# -----------------------------------
+# post-push - WORKFLOW TRIGGER
 # -----------------------------------
 HOOK_NAME="post-push"
 HOOK_FILE="$GIT_HOOKS_DIR/$HOOK_NAME"
@@ -122,51 +171,13 @@ chmod +x "$HOOK_FILE"
 echo "  → post-push installed"
 
 # -----------------------------------
-# post-checkout
-# -----------------------------------
-HOOK_NAME="post-checkout"
-HOOK_FILE="$GIT_HOOKS_DIR/$HOOK_NAME"
-BACKUP_FILE="$HOOK_FILE.cadre.bak"
-
-if [[ -f "$HOOK_FILE" ]]; then
-    cp "$HOOK_FILE" "$BACKUP_FILE"
-    {
-        echo "#!/usr/bin/env bash"
-        echo 'if [[ -f "'"$BACKUP_FILE"'" ]]; then source "'"$BACKUP_FILE"'"; fi'
-        echo ""
-        cat <<'INNER'
-PREV_BRANCH=$1
-NEW_BRANCH=$2
-if [[ "$NEW_BRANCH" == micro/* ]]; then
-    echo "[CADRE] Switched to microbranch: $NEW_BRANCH"
-fi
-if [[ "$NEW_BRANCH" == sprint/* ]]; then
-    echo "[CADRE] Switched to sprint branch: $NEW_BRANCH"
-fi
-INNER
-    } > "$HOOK_FILE"
-else
-    cat > "$HOOK_FILE" <<'INNER'
-#!/usr/bin/env bash
-PREV_BRANCH=$1
-NEW_BRANCH=$2
-if [[ "$NEW_BRANCH" == micro/* ]]; then
-    echo "[CADRE] Switched to microbranch: $NEW_BRANCH"
-fi
-if [[ "$NEW_BRANCH" == sprint/* ]]; then
-    echo "[CADRE] Switched to sprint branch: $NEW_BRANCH"
-fi
-INNER
-fi
-chmod +x "$HOOK_FILE"
-echo "  → post-checkout installed"
-
-# -----------------------------------
 # post-commit
 # -----------------------------------
 HOOK_NAME="post-commit"
 HOOK_FILE="$GIT_HOOKS_DIR/$HOOK_NAME"
 BACKUP_FILE="$HOOK_FILE.cadre.bak"
+
+echo "Installing $HOOK_NAME hook..."
 
 if [[ -f "$HOOK_FILE" ]]; then
     cp "$HOOK_FILE" "$BACKUP_FILE"
@@ -200,6 +211,8 @@ HOOK_NAME="post-merge"
 HOOK_FILE="$GIT_HOOKS_DIR/$HOOK_NAME"
 BACKUP_FILE="$HOOK_FILE.cadre.bak"
 
+echo "Installing $HOOK_NAME hook..."
+
 if [[ -f "$HOOK_FILE" ]]; then
     cp "$HOOK_FILE" "$BACKUP_FILE"
     {
@@ -226,10 +239,10 @@ chmod +x "$HOOK_FILE"
 echo "  → post-merge installed"
 
 echo ""
-echo "✅ CADRE hooks installed:"
-echo "  - pre-push:    tests + lint (blocks if fail)"
+echo "✅ CADRE hooks installed (WORKFLOW TRIGGERS):"
+echo "  - pre-push:    blocks if tests fail"
+echo "  - post-checkout: TRIGGERS implement on sprint/*"
 echo "  - post-push:   microbranch notification"
-echo "  - post-checkout: branch switch notification"
 echo "  - post-commit: commit notification"
 echo "  - post-merge:  sprint merge notification"
 echo ""

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# CADRE post-checkout hook - WORKFLOW TRIGGER
+
+PREV_BRANCH=$1
+NEW_BRANCH=$2
+
+# Source existing hook if it exists
+if [[ -f "$HOOK_BACKUP" ]]; then
+    source "$HOOK_BACKUP"
+fi
+
+if [[ "$NEW_BRANCH" == micro/* ]]; then
+    echo "[CADRE] Switched to microbranch: $NEW_BRANCH"
+fi
+
+if [[ "$NEW_BRANCH" == sprint/* ]]; then
+    echo "[CADRE] Sprint branch detected: $NEW_BRANCH"
+    echo "[CADRE] Starting implementation..."
+    EPIC=$(echo "$NEW_BRANCH" | sed 's/sprint\///')
+    bash scripts/implement/implement.sh "specs/$EPIC"
+fi
