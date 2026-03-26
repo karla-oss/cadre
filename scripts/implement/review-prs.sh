@@ -1,13 +1,18 @@
 #!/usr/bin/env bash
 # =============================================================================
-# review-prs.sh — I4 Code Review
+# review-prs.sh — I4 Code Review + Merge
 #
 # Usage:
-#   bash scripts/bash/review-prs.sh <epic-folder>
+#   bash scripts/implement/review-prs.sh <epic-folder> [PR_NUMBER]
+#
+# Called by: Git Hook (on PR approved)
 #
 # Flow:
-#   Spawns @Archi to review PRs
-#   @Archi APPROVES and MERGES
+#   1. Spawns @Archi agent
+#   2. @Archi reads PR diff
+#   3. @Archi validates: code quality, SPEC compliance, micro-modules
+#   4. If OK: APPROVED → MERGE PR
+#   5. If issues: NEEDS_WORK → PR comment
 # =============================================================================
 
 set -euo pipefail
@@ -17,9 +22,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CADRE_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
 EPIC_PATH="${1:-}"
+PR_NUMBER="${2:-}"
+
 if [[ -z "$EPIC_PATH" ]]; then
-  echo "Usage: $0 <epic-folder>" >&2
-  echo "Example: $0 specs/S5-polish---auth" >&2
+  echo "Usage: $0 <epic-folder> [PR_NUMBER]" >&2
+  echo "Example: $0 specs/S5-polish---auth 42" >&2
   exit 1
 fi
 
@@ -28,15 +35,28 @@ if [[ "$EPIC_PATH" != /* ]]; then
 fi
 
 EPIC_NAME=$(basename "$EPIC_PATH")
-TASKS_DIR="$EPIC_PATH/tasks"
+SPEC_FILE="$EPIC_PATH/spec.md"
+PLAN_FILE="$EPIC_PATH/plan.md"
 
-echo "=== I4 Code Review ==="
+echo "=== I4 Code Review + Merge ==="
 echo "Epic: $EPIC_NAME"
 echo ""
 
-if [[ ! -d "$TASKS_DIR" ]]; then
-  echo "Error: tasks/ not found" >&2
-  exit 1
+# Get PR info if gh is available and PR_NUMBER provided
+if command -v gh &> /dev/null && [[ -n "$PR_NUMBER" ]]; then
+  echo "Fetching PR #$PR_NUMBER..."
+  PR_TITLE=$(gh pr view "$PR_NUMBER" --json title --jq '.title' 2>/dev/null || echo "Unknown")
+  PR_URL=$(gh pr view "$PR_NUMBER" --json url --jq '.url' 2>/dev/null || echo "")
+  PR_STATE=$(gh pr view "$PR_NUMBER" --json state --jq '.state' 2>/dev/null || echo "UNKNOWN")
+  
+  echo "PR #$PR_NUMBER: $PR_TITLE"
+  echo "State: $PR_STATE"
+  echo ""
+  
+  if [[ "$PR_STATE" != "OPEN" ]]; then
+    echo "PR is not open. Skipping."
+    exit 0
+  fi
 fi
 
 echo "✅ Script ready"
@@ -49,38 +69,86 @@ ARCHI_TASK="You are @archi for SpecForge.
 ## Project Context
 - Project: SpecForge
 - Stage: MVP
+- Spec: $EPIC_NAME at $SPEC_FILE
+- Plan: $PLAN_FILE
 
 ## Your Task: I4 Code Review
 
-Review PRs for code quality and merge.
+Review PR for code quality and merge.
 
-Read:
-- Tasks: $TASKS_DIR/*.md (filter READY_FOR_REVIEW status with PR links)
-- Spec: $EPIC_PATH/spec.md
-- Plan: $EPIC_PATH/plan.md
+PR: #$PR_NUMBER - $PR_TITLE
+URL: $PR_URL
 
 ## Review Checks
-For each PR:
-1. Read PR diff
-2. Validate:
-   - Code quality
-   - Spec compliance
-   - Micro-module rules (small files, max 100 lines)
-   - No security issues
-   - Tests pass
-3. If OK:
-   - APPROVED → MERGE PR
-4. If issues:
-   - NEEDS_WORK → add comment
 
-## Key Rule
-APPROVED = MERGE immediately.
+1. **Code Quality**
+   - Clean code, no duplication
+   - Follows project conventions
+   - No commented out code
+   - No debug statements
 
-## Output
-Write review summary to: $EPIC_PATH/review-summary.md
+2. **SPEC Compliance**
+   - Code matches spec requirements
+   - All acceptance criteria addressed
+   - No feature creep
 
-Report done."
+3. **Micro-module Rules**
+   - Small focused files
+   - Max ~100 lines per file
+   - One concept per file
+   - No god files
+
+4. **Security**
+   - No hardcoded secrets
+   - Input validation
+   - SQL injection prevention
+   - XSS prevention
+
+5. **Tests**
+   - If tests exist: do they pass?
+   - Are tests meaningful?
+
+## Your Decision
+
+For each issue found:
+- If minor: add comment but APPROVE
+- If blocking: REQUEST_CHANGES with specific feedback
+
+## If APPROVED
+Merge the PR:
+\`\`\`bash
+gh pr merge $PR_NUMBER --squash --delete-branch
+\`\`\`
+
+Add merge comment:
+\`\`\`
+✅ Reviewed by @archi. Code quality: OK. SPEC compliant. Merged.
+\`\`\`
+
+## If NEEDS_WORK
+Add review comment with specific issues:
+\`\`\`
+⚠️ Changes requested by @archi:
+
+1. [Issue description]
+2. [Issue description]
+
+Please fix and re-request review.
+\`\`\`
+
+Report done with summary."
 
 echo "$ARCHI_TASK"
 echo ""
-echo "=== Spawning @archi ==="
+echo "=== To complete I4 manually: ==="
+echo "1. Spawn @archi agent"
+echo "2. Give the task above"
+echo "3. @Archi will review and merge"
+echo ""
+
+# If PR_NUMBER provided, fetch diff for review
+if command -v gh &> /dev/null && [[ -n "$PR_NUMBER" ]]; then
+  echo "Fetching PR diff..."
+  gh pr diff "$PR_NUMBER" > "/tmp/pr-${PR_NUMBER}.diff" 2>/dev/null
+  echo "Diff saved to: /tmp/pr-${PR_NUMBER}.diff"
+fi
