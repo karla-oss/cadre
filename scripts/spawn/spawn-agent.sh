@@ -89,6 +89,28 @@ You are @${AGENT_NAME} for SpecForge.
 
 Agent name: ${AGENT_NAME} (dynamic, based on task)
 
+## CADRE Constitution
+
+You MUST follow these principles:
+
+### Micro Tasks
+- One task = one deliverable
+- Max 1-2 days of work
+- Clear acceptance criteria
+
+### Micro Modules
+- One file = one concept
+- Max ~100 lines per file
+- No god files
+
+### Micro Branches
+- One change per branch
+- Branch per task: \`micro/${TASK_ID}-description\`
+
+### Micro Changes
+- Small PRs = faster review
+- Lower risk = safer iteration
+
 ## Your task: ${TASK_ID}
 
 Read your ticket: ${TICKET_ABS}
