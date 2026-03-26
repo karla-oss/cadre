@@ -94,6 +94,43 @@ fi
 # 3. Create directory structure
 # -----------------------------------
 
+# Agents directory (project-specific agents)
+if [[ ! -d agents ]]; then
+    mkdir -p agents
+    cat > agents/README.md <<'EOF'
+# Agents Directory
+
+## Project-Specific Agents
+
+Each agent is defined in its own subdirectory:
+\`\`\`
+agents/
+├── api-dev/         # API developer agent
+│   ├── context.md  # Agent context and skills
+│   └── ...         # Other agent-specific files
+├── frontend-dev/   # Frontend developer agent
+├── infra-dev/      # Infrastructure agent
+└── ...
+\`\`\`
+
+## Agent Naming
+
+Agent names are taken from:
+1. Task's `module:` field
+2. Directory names in agents/
+
+## Usage
+
+When spawning agents, CADRE looks in agents/ for:
+- Agent context (context.md)
+- Agent-specific configurations
+- Skills and competencies
+EOF
+    echo "  → agents/ created"
+else
+    echo "⚠️  agents/ already exists. Skipping."
+fi
+
 # Tasks directory
 if [[ ! -d tasks ]]; then
     mkdir -p tasks
@@ -107,7 +144,7 @@ if [[ ! -d tasks ]]; then
 title: "[T001] Task title"
 status: TODO
 priority: P1
-module: api
+module: api-dev
 created-by: puma
 ---
 
@@ -154,6 +191,27 @@ EOF
 else
     echo "⚠️  specs/ already exists. Skipping."
 fi
+
+# -----------------------------------
+# CADRE Structure Summary
+# -----------------------------------
+echo ""
+echo "=== CADRE Structure ==="
+echo ""
+echo "Your project now has:"
+echo "  agents/      - Project-specific agents (api-dev, frontend-dev, etc)"
+echo "  tasks/       - Task files (T001.md, T002.md, ...)"
+echo "  specs/       - Epic specs and plans"
+echo "  cadre-config.yml - CADRE configuration"
+echo ""
+echo "Agent names come from:"
+echo "  1. Task's module: field (e.g., module: api-dev)"
+echo "  2. Directory names in agents/"
+echo ""
+echo "Next:"
+echo "  1. Define your agents in agents/"
+echo "  2. Run sprint-plan.sh to create epic"
+echo "  3. Run implement.sh to spawn agents"
 
 # -----------------------------------
 # 4. Create .gitignore entries
