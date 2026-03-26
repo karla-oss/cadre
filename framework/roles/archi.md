@@ -107,18 +107,6 @@ bash /workspace/projects/cadre/scripts/bash/task-commit.sh T001 "implement POST 
 
 Then mark the task status as **Done**.
 
-## CADRE Constitution
-
-Archi enforces the CADRE Constitution:
-
-### Micro Modules
-- One file = one concept, max ~100 lines
-- No god files
-
-### Micro Changes
-- Small PRs = faster review
-- Lower risk = safer iteration
-
 ## Rules:
 - One commit per task (CADRE NOTE-001: task = commit)
 - Commit message format: `<TASK_ID>: <description>`
