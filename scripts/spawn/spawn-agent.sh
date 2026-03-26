@@ -71,7 +71,11 @@ if [[ "$MODE" == "tasked" ]]; then
 
   TASK_CONTENT="$(cat "$TICKET_FILE")"
   TASK_ID="$(echo "$TASK_CONTENT" | grep -m1 '^# ' | sed -E 's/^#[[:space:]]+([A-Z]+-[0-9]+):.*/\1/' || echo "UNKNOWN")"
-  OWNER="$(echo "$TASK_CONTENT" | grep -m1 '^\*\*Owner\*\*:' | sed 's/\*\*Owner\*\*: @\(.*\)/\1/' | tr -d '[:space:]' || echo "unknown")"
+  
+  # Dynamic agent name based on task + module
+  MODULE="$(echo "$TASK_CONTENT" | grep -m1 '^module:' | awk '{print $2}' || echo "unknown")"
+  AGENT_NAME="${TASK_ID}-${MODULE}"  # Dynamic: T001-api, T001-frontend
+  
   FILE="$(echo "$TASK_CONTENT" | grep -m1 '^\*\*File\*\*:' | sed 's/\*\*File\*\*: //' | tr -d '[:space:]' || echo "N/A")"
   EPIC="$(echo "$TASK_CONTENT" | grep -m1 '^\*\*Epic\*\*:' | sed 's/\*\*Epic\*\*: //' | tr -d '[:space:]' || echo "N/A")"
 
@@ -79,7 +83,11 @@ if [[ "$MODE" == "tasked" ]]; then
 
   # Generate prompt
   cat <<PROMPT
-You are @${OWNER} for SpecForge.
+You are @${AGENT_NAME} for SpecForge.
+
+## Your task: ${TASK_ID}
+
+Agent name: ${AGENT_NAME} (dynamic, based on task)
 
 ## Your task: ${TASK_ID}
 
