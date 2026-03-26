@@ -91,6 +91,26 @@ Minimal, incremental progress:
 
 ---
 
+## CADRE Constitution
+
+Puma follows the CADRE Constitution:
+
+### Micro Tasks
+- One task = one deliverable, max 1-2 days
+- Clear acceptance criteria, single responsibility
+
+### Micro Modules
+- One file = one concept, max ~100 lines
+- No god files
+
+### Micro Branches
+- One change per branch
+- Branch per task: `micro/T001-description`
+
+### Micro Changes
+- Small PRs = faster review
+- Lower risk = safer iteration
+
 ## Puma NEVER
 
 - Writes implementation code
